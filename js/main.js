@@ -12,13 +12,15 @@ function initialize() {
 }
 
 function draw_path(path, data, colors) {
+    var i, j;
+
     // Check for bad input
     if (path.length < 1 || data.length < 1 || colors.length < 1) {
-        console.log("Must have at least 1 location, 1 data point and 1 color.")
+        console.log("Must have at least 1 location, 1 data point and 1 color.");
         return;
     }
     if (path.length != data.length) {
-        console.log("Must have corresponding number of locations and data points.")
+        console.log("Must have corresponding number of locations and data points.");
         return;
     }
 
@@ -28,7 +30,7 @@ function draw_path(path, data, colors) {
 
     // Find the points to divide the line by color
     var color_division = [];
-    for (var i = 0; i < colors.length - 1; i++) {
+    for (i = 0; i < colors.length - 1; i++) {
         color_division[i] = min + (i + 1) * (max - min) / colors.length;
     }
     color_division[color_division.length] = max;
@@ -40,9 +42,9 @@ function draw_path(path, data, colors) {
     // Create the line segments based on color division
     var current_segment = [];
     var previous_color = -1;
-    for (var i = 0; i < path.length; i++) {
+    for (i = 0; i < path.length; i++) {
         var this_color;
-        for (var j = 0; j < color_division.length; j++) {
+        for (j = 0; j < color_division.length; j++) {
             if (data[i] <= color_division[j]) {
                 this_color = j;
                 break;
@@ -68,7 +70,7 @@ function draw_path(path, data, colors) {
     line_segments[line_segments.length] = current_segment;
     line_colors[line_colors.length] = previous_color;
 
-    for (var i = 0; i < line_segments.length; i++) {
+    for (i = 0; i < line_segments.length; i++) {
         var polyline = new google.maps.Polyline({
             path: line_segments[i],
             geodesic: true,
@@ -113,6 +115,51 @@ function draw_path_test() {
         "#25CA00"
     ];
     draw_path(path, data, color);
+}
+
+var log_extension = /.*\.(log)$/;
+var log;
+
+function parse_log(log_file_string) {
+    console.log(log_file_string);
+}
+
+function load_log_input() {
+    var log_input = document.getElementById("log_input");
+
+    for (var i = 0; i < log_input.files.length; i++) {
+        if (log_extension.test(log_input.files[i].name)) {
+            var log_file = log_input.files[i];
+            var log_reader = new FileReader;
+
+            log_reader.onload = function (progress_event) {
+                parse_log(progress_event.target.result);
+            };
+
+            log_reader.readAsText(log_file, 'ANSI');
+        }
+    }
+}
+
+var picture_extension = /.*\.(jpg)$/;
+var images = [];
+
+function load_pic_input() {
+    var pic_input = document.getElementById("pic_input");
+
+    for (var i = 0; i < pic_input.files.length; i++) {
+        if (picture_extension.test(pic_input.files[i].name)) {
+            var pic_file = pic_input.files[i];
+            var pic_reader = new FileReader;
+
+            pic_reader.onload = function (progress_event) {
+                images[images.length] = document.createElement("IMG");
+                images[images.length-1].setAttribute("src", progress_event.target.result);
+            };
+
+            pic_reader.readAsDataURL(pic_file);
+        }
+    }
 }
 
 initialize();

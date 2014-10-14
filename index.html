@@ -2,7 +2,8 @@
 <!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
 <!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
 <!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js" xmlns="http://www.w3.org/1999/html"> <!--<![endif]-->
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -14,6 +15,7 @@
 
         <link rel="stylesheet" href="css/normalize.css">
         <link rel="stylesheet" href="css/main.css">
+        <link rel="stylesheet" href="css/sidebar.css">
         <script src="js/vendor/modernizr-2.6.2.min.js"></script>
     </head>
     <body>
@@ -21,7 +23,26 @@
             <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
         <![endif]-->
 
-        <div id="map-canvas" style="width: 100%; height: 100%; position: absolute;"> TEST </div>
+        <!--<div id="map-canvas" style="width: 80%; height: 100%; position: relative;"> TEST </div>
+        <div id="sidebar" style="width: 20%; height: 100%; position: relative"> Test </div>-->
+
+        <div class="container">
+            <div id="map-canvas"></div>
+            <div id="sidebar">
+                <div class = side-box>
+                    <center><b>Select Logs</b></center>
+                    <input type="file" id="log_input" multiple> <br> <br>
+                    <center><button onclick="load_log_input()">Load Logs</button></center>
+                </div>
+
+                <div class = side-box>
+                    <center><b>Select Pictures</b></center>
+                    <input type="file" id="pic_input" multiple> <br> <br>
+                    <center><button onclick="load_pic_input()">Load Pictures</button></center>
+                </div>
+            </div>
+
+        </div>
 
         <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
         <script>window.jQuery || document.write('<script src="js/vendor/jquery-1.10.2.min.js"><\/script>')</script>
