@@ -13,7 +13,7 @@ body {
     position: absolute;
     top: 0;
     right: 0;
-    width: 350px;
+    width: 300px;
     height: 100%;
     box-sizing: border-box;
     background:#007777;
@@ -22,11 +22,5 @@ body {
 #map-canvas {
     width: auto;
     height: 100%;
-    margin-right: 350px;
-}
-
-.side-box {
-    border: solid;
-    border-color: #FFFFFF;
-    padding: 10px 10px 10px 10px;
+    margin-right: 300px;
 }

@@ -11,7 +11,7 @@ function initialize() {
     map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
 }
 
-function draw_path(path, data, colors) {
+function draw_path(path, data, colors, unit) {
     var i, j;
 
     // Check for bad input
@@ -34,6 +34,17 @@ function draw_path(path, data, colors) {
         color_division[i] = min + (i + 1) * (max - min) / colors.length;
     }
     color_division[color_division.length] = max;
+
+    var legend = document.getElementById("legend");
+    legend.innerHTML = "";
+    for (i = 0; i < color_division.length; i++) {
+        if (i == 0) {
+            legend.innerHTML = legend.innerHTML + min + " - " + color_division[i] + " " + unit + "<br>";
+        }
+        else {
+            legend.innerHTML = legend.innerHTML + color_division[i-1] + 1 + " - " + color_division[i] + " " + unit + "<br>";
+        }
+    }
 
     // Line segments to draw and corresponding color
     var line_segments = [];
@@ -76,85 +87,163 @@ function draw_path(path, data, colors) {
             geodesic: true,
             strokeColor: colors[line_colors[i]],
             strokeOpacity: 1.0,
-            strokeWeight: 2
+            strokeWeight: 5
         });
 
         polyline.setMap(map);
     }
+
+    var south = 200;
+    var north = -200;
+    var west = 200;
+    var east = -200;
+
+    for (i = 0; i < path.length; i++) {
+        if (path[i].lat() < south) {
+            south = path[i].lat();
+        }
+        if (path[i].lat() > north) {
+            north = path[i].lat();
+        }
+        if (path[i].lng() < west) {
+            west = path[i].lng();
+        }
+        if (path[i].lng() > east) {
+            east = path[i].lng();
+        }
+    }
+
+    var sw = new google.maps.LatLng(south, west);
+    var ne = new google.maps.LatLng(north, east);
+    var bounds = new google.maps.LatLngBounds(sw, ne);
+    map.fitBounds(bounds);
 }
 
-function draw_path_test() {
-    var path = [
-        new google.maps.LatLng(30.614854, -96.337970),
-        new google.maps.LatLng(30.614572, -96.338356),
-        new google.maps.LatLng(30.614289, -96.338777),
-        new google.maps.LatLng(30.614636, -96.339185),
-        new google.maps.LatLng(30.614217, -96.339880),
-        new google.maps.LatLng(30.613646, -96.339378),
-        new google.maps.LatLng(30.613135, -96.338933),
-        new google.maps.LatLng(30.612619, -96.338450),
-        new google.maps.LatLng(30.612043, -96.337914),
-        new google.maps.LatLng(30.611573, -96.337388)
-    ];
-    var data = [
-        0,
-        7,
-        14,
-        21,
-        28,
-        35,
-        42,
-        49,
-        56,
-        63
-    ];
+function draw_data(log_file_info, data_selection) {
+    var path = [];
+    var data = [];
     var color = [
         "#FF0000",
         "#FF5E00",
         "#FFC000",
         "#25CA00"
     ];
-    draw_path(path, data, color);
+
+    for(var i = 1; i < log_file_info.parsed_data.length; i++) {
+        path[i-1] = new google.maps.LatLng(parseFloat(log_file_info.parsed_data[i][0]), parseFloat(log_file_info.parsed_data[i][1]));
+        data[i-1] = parseFloat(log_file_info.parsed_data[i][data_selection]);
+    }
+
+    draw_path(path, data, color, log_file_info.parsed_data[0][data_selection].split("-")[1]);
+}
+
+function select_data(){
+    var log_select = document.getElementById("log_select_dropdown");
+    var data_select = document.getElementById("data_select_dropdown");
+    if (data_select.length > 0 && data_select.value != "No Data Loaded") {
+        draw_data(logs[log_select.selectedIndex], data_select.selectedIndex + 2);
+    }
 }
 
 var log_extension = /.*\.(log)$/;
-var log;
+var logs = [];
 
-function parse_log(log_file_string) {
-    console.log(log_file_string);
+function Log_File_Info() {
+    this.log_data = "";
+    this.filename = "";
+    this.parsed_data = [];
+}
+
+function select_log() {
+    var log_select = document.getElementById("log_select_dropdown");
+    if (log_select.length > 0 && log_select.value != "No Logs Loaded") {
+        parse_log(logs[log_select.selectedIndex]);
+
+        var data_select_dropdown = document.getElementById("data_select_dropdown");
+        while (data_select_dropdown.length > 0) {
+            data_select_dropdown.remove(0);
+        }
+        for (var i = 2; i < logs[log_select.selectedIndex].parsed_data[0].length; i++) {
+            var option = document.createElement("option");
+            option.text = logs[log_select.selectedIndex].parsed_data[0][i].split("-")[0];
+            data_select_dropdown.add(option);
+        }
+
+        var log_data_details = document.getElementById("data_details");
+        log_data_details.open = true;
+        var log_select_details = document.getElementById("log_select_details");
+        log_select_details.open = false;
+    }
+}
+
+function parse_log(log_file_info) {
+    log_file_info.parsed_data = log_file_info.log_data.split("\n");
+    for (var i = 0; i < log_file_info.parsed_data.length; i++) {
+        log_file_info.parsed_data[i] = log_file_info.parsed_data[i].split(" ");
+    }
 }
 
 function load_log_input() {
+    var i;
+    logs = [];
+
     var log_input = document.getElementById("log_input");
 
-    for (var i = 0; i < log_input.files.length; i++) {
+    var log_select = document.getElementById("log_select_dropdown");
+    while (log_select.length > 0) {
+        log_select.remove(0);
+    }
+
+    for (i = 0; i < log_input.files.length; i++) {
         if (log_extension.test(log_input.files[i].name)) {
             var log_file = log_input.files[i];
             var log_reader = new FileReader;
+            log_reader.filename = log_file.name;
 
             log_reader.onload = function (progress_event) {
-                parse_log(progress_event.target.result);
+                logs[logs.length] = new Log_File_Info();
+                logs[logs.length - 1].log_data = progress_event.target.result;
+                logs[logs.length - 1].filename = progress_event.target.filename;
+
+                var log_option = document.createElement("option");
+                log_option.text = logs[logs.length - 1].filename;
+                log_select.add(log_option);
             };
 
             log_reader.readAsText(log_file, 'ANSI');
         }
     }
+
+    var log_select_details = document.getElementById("log_select_details");
+    log_select_details.open = true;
+
+    var log_load_details = document.getElementById("log_load_details");
+    log_load_details.open = false;
 }
 
 var picture_extension = /.*\.(jpg)$/;
 var images = [];
 
+function Pic_File_Info() {
+    this.img = document.createElement("IMG");
+    this.filename = "";
+}
+
 function load_pic_input() {
+    images = [];
+
     var pic_input = document.getElementById("pic_input");
 
     for (var i = 0; i < pic_input.files.length; i++) {
         if (picture_extension.test(pic_input.files[i].name)) {
             var pic_file = pic_input.files[i];
             var pic_reader = new FileReader;
+            pic_reader.filename = pic_file.name;
 
             pic_reader.onload = function (progress_event) {
-                images[images.length] = document.createElement("IMG");
-                images[images.length-1].setAttribute("src", progress_event.target.result);
+                images[images.length] = new Pic_File_Info();
+                images[images.length-1].img.setAttribute("src", progress_event.target.result);
+                images[images.length-1].filename = progress_event.target.filename;
             };
 
             pic_reader.readAsDataURL(pic_file);

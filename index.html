@@ -29,17 +29,35 @@
         <div class="container">
             <div id="map-canvas"></div>
             <div id="sidebar">
-                <div class = side-box>
-                    <center><b>Select Logs</b></center>
-                    <input type="file" id="log_input" multiple> <br> <br>
-                    <center><button onclick="load_log_input()">Load Logs</button></center>
-                </div>
+                <details id="log_load_details">
+                    <summary>Load Logs Files</summary>
+                    <input type="file" id="log_input" multiple>
+                    <button onclick="load_log_input()">Load Logs</button>
+                </details>
 
-                <div class = side-box>
-                    <center><b>Select Pictures</b></center>
-                    <input type="file" id="pic_input" multiple> <br> <br>
-                    <center><button onclick="load_pic_input()">Load Pictures</button></center>
-                </div>
+                <details id="pic_load_details">
+                    <summary>Load Pictures</summary>
+                    <input type="file" id="pic_input" multiple>
+                    <button onclick="load_pic_input()">Load Pictures</button>
+                </details>
+
+                <details id="log_select_details">
+                    <summary>Select Log to View</summary>
+                    <select id="log_select_dropdown">
+                        <option value="No Logs Loaded">No Logs Loaded</option>
+                    </select>
+                    <button onclick="select_log()">Select Log</button>
+                </details>
+
+                <details id="data_details">
+                    <summary>Select Data to View</summary>
+                    <select id="data_select_dropdown">
+                        <option value="No Data Loaded">No Data Loaded</option>
+                    </select>
+                    <button onclick="select_data()">Select Log</button>
+                </details>
+
+                <div id="legend"></div>
             </div>
 
         </div>
