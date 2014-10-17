@@ -1,6 +1,34 @@
+// The google map object
 var map;
+// Current polylines drawn
+var polylines = [];
 
+// Regular expression for log files
+var log_extension = /.*\.(log)$/;
+// Array of Log_File_Info
+var logs = [];
+
+// Regular expression for
+var picture_extension = /.*\.(jpg)$/;
+// Array of Pic_File_Info
+var images = [];
+
+// Structure for Log file information
+function Log_File_Info() {
+    this.log_data = "";
+    this.filename = "";
+    this.parsed_data = [];
+}
+
+// Structure for Picture file information
+function Pic_File_Info() {
+    this.img = document.createElement("IMG");
+    this.filename = "";
+}
+
+// Set options and initialize Google Maps
 function initialize() {
+    // Map options for the Embedded Google Map
     var mapOptions = {
         center: { lat: 30.618989, lng: -96.338653},
         zoom: 16,
@@ -8,11 +36,25 @@ function initialize() {
         panControl: false,
         zoomControl: false
     };
+    // Create the map
     map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
 }
 
-function draw_path(path, data, colors, unit) {
+// Draw a colored path
+//  path - array of LatLng locations
+//  data - array of data corresponding to path points
+//  colors - array of strings in format "#RRGGBB" to color path
+//  quantity - the quantity that is being drawn (string)
+//  unit - the unit for the quantity (string)
+function draw_path(path, data, colors, quantity, unit) {
+    // variables for loop control
     var i, j;
+
+    // Remove all current polylines from the map
+    for (i = 0; i < polylines.length; i++) {
+        polylines[i].setMap(null);
+    }
+    polylines = [];
 
     // Check for bad input
     if (path.length < 1 || data.length < 1 || colors.length < 1) {
@@ -35,14 +77,20 @@ function draw_path(path, data, colors, unit) {
     }
     color_division[color_division.length] = max;
 
+    // Add legend to legend div and un-hide it
     var legend = document.getElementById("legend");
-    legend.innerHTML = "";
+    legend.innerHTML = quantity + "<br>";
+    legend.style.visibility = "visible";
     for (i = 0; i < color_division.length; i++) {
+        var legend_box = document.createElement("div");
+        legend_box.className = "legend-box";
+        legend_box.style.backgroundColor = colors[i];
+        legend.appendChild(legend_box);
         if (i == 0) {
-            legend.innerHTML = legend.innerHTML + min + " - " + color_division[i] + " " + unit + "<br>";
+            legend.innerHTML = legend.innerHTML + " " + min + " - " + color_division[i] + " " + unit + "<br>";
         }
         else {
-            legend.innerHTML = legend.innerHTML + color_division[i-1] + 1 + " - " + color_division[i] + " " + unit + "<br>";
+            legend.innerHTML = legend.innerHTML + " " + color_division[i-1] + 1 + " - " + color_division[i] + " " + unit + "<br>";
         }
     }
 
@@ -81,8 +129,9 @@ function draw_path(path, data, colors, unit) {
     line_segments[line_segments.length] = current_segment;
     line_colors[line_colors.length] = previous_color;
 
+    // Create and draw the individual polylines
     for (i = 0; i < line_segments.length; i++) {
-        var polyline = new google.maps.Polyline({
+        polylines[polylines.length] = new google.maps.Polyline({
             path: line_segments[i],
             geodesic: true,
             strokeColor: colors[line_colors[i]],
@@ -90,14 +139,14 @@ function draw_path(path, data, colors, unit) {
             strokeWeight: 5
         });
 
-        polyline.setMap(map);
+        polylines[polylines.length - 1].setMap(map);
     }
 
+    // Find the southwest and northeast region for the path
     var south = 200;
     var north = -200;
     var west = 200;
     var east = -200;
-
     for (i = 0; i < path.length; i++) {
         if (path[i].lat() < south) {
             south = path[i].lat();
@@ -113,12 +162,16 @@ function draw_path(path, data, colors, unit) {
         }
     }
 
+    // Zoom and move to the region
     var sw = new google.maps.LatLng(south, west);
     var ne = new google.maps.LatLng(north, east);
     var bounds = new google.maps.LatLngBounds(sw, ne);
     map.fitBounds(bounds);
 }
 
+// Draw data from a log file
+//  log_file_info - log file to use
+//  data_selection - which data/quantity to use
 function draw_data(log_file_info, data_selection) {
     var path = [];
     var data = [];
@@ -129,14 +182,17 @@ function draw_data(log_file_info, data_selection) {
         "#25CA00"
     ];
 
+    // Create LatLng objects
     for(var i = 1; i < log_file_info.parsed_data.length; i++) {
         path[i-1] = new google.maps.LatLng(parseFloat(log_file_info.parsed_data[i][0]), parseFloat(log_file_info.parsed_data[i][1]));
         data[i-1] = parseFloat(log_file_info.parsed_data[i][data_selection]);
     }
 
-    draw_path(path, data, color, log_file_info.parsed_data[0][data_selection].split("-")[1]);
+    var quantity_unit = log_file_info.parsed_data[0][data_selection].split("-");
+    draw_path(path, data, color, quantity_unit[0], quantity_unit[1]);
 }
 
+// Handle button presses for selecting which data/quantity to use
 function select_data(){
     var log_select = document.getElementById("log_select_dropdown");
     var data_select = document.getElementById("data_select_dropdown");
@@ -145,15 +201,7 @@ function select_data(){
     }
 }
 
-var log_extension = /.*\.(log)$/;
-var logs = [];
-
-function Log_File_Info() {
-    this.log_data = "";
-    this.filename = "";
-    this.parsed_data = [];
-}
-
+// Handle button presses for selecting which loaded log to use
 function select_log() {
     var log_select = document.getElementById("log_select_dropdown");
     if (log_select.length > 0 && log_select.value != "No Logs Loaded") {
@@ -176,24 +224,36 @@ function select_log() {
     }
 }
 
+// Parse a log file
+//  log_file_info - log file structure to parse the data for
 function parse_log(log_file_info) {
+    // Parse by line
     log_file_info.parsed_data = log_file_info.log_data.split("\n");
+    // Parse each line by spaces
     for (var i = 0; i < log_file_info.parsed_data.length; i++) {
         log_file_info.parsed_data[i] = log_file_info.parsed_data[i].split(" ");
     }
 }
 
+// Handle loading logs when Load Logs button is pressed
+//  Only read name.log files
 function load_log_input() {
+    // loop control
     var i;
+    // Clear current logs
     logs = [];
 
+    // Get the file input element for logs
     var log_input = document.getElementById("log_input");
 
+    // Clear the logs in the log select dropdown
     var log_select = document.getElementById("log_select_dropdown");
     while (log_select.length > 0) {
         log_select.remove(0);
     }
 
+    // Test each selected file to see if its a log and if it is create a
+    //  log info structure for it after reading it in
     for (i = 0; i < log_input.files.length; i++) {
         if (log_extension.test(log_input.files[i].name)) {
             var log_file = log_input.files[i];
@@ -214,26 +274,26 @@ function load_log_input() {
         }
     }
 
+    // Expand Log Select Detail
     var log_select_details = document.getElementById("log_select_details");
     log_select_details.open = true;
 
+    // Contract Select Log View
     var log_load_details = document.getElementById("log_load_details");
     log_load_details.open = false;
 }
 
-var picture_extension = /.*\.(jpg)$/;
-var images = [];
-
-function Pic_File_Info() {
-    this.img = document.createElement("IMG");
-    this.filename = "";
-}
-
+// Handle loading images when Load Pictures is pressed
+//  Only reads name.jpg files
 function load_pic_input() {
+    // Clear images
     images = [];
 
+    // Get the file input for pictures
     var pic_input = document.getElementById("pic_input");
 
+    // Test each selected file to see if it is an image and create
+    // a pic image info structure for it after reading it in
     for (var i = 0; i < pic_input.files.length; i++) {
         if (picture_extension.test(pic_input.files[i].name)) {
             var pic_file = pic_input.files[i];
@@ -251,4 +311,5 @@ function load_pic_input() {
     }
 }
 
+// Begin the App
 initialize();
