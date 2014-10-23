@@ -13,6 +13,9 @@ var picture_extension = /.*\.(jpg)$/;
 // Array of Pic_File_Info
 var images = [];
 
+var menu_buttons = [];
+var menu_contents = [];
+
 // Structure for Log file information
 function Log_File_Info() {
     this.log_data = "";
@@ -38,6 +41,25 @@ function initialize() {
     };
     // Create the map
     map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+
+    menu_buttons[menu_buttons.length] = document.getElementById("log_load_button");
+    menu_buttons[menu_buttons.length] = document.getElementById("picture_load_button");
+    menu_buttons[menu_buttons.length] = document.getElementById("log_select_button");
+    menu_buttons[menu_buttons.length] = document.getElementById("data_select_button");
+
+    menu_contents[menu_contents.length] = document.getElementById("log_load_content");
+    menu_contents[menu_contents.length] = document.getElementById("picture_load_content");
+    menu_contents[menu_contents.length] = document.getElementById("log_select_content");
+    menu_contents[menu_contents.length] = document.getElementById("data_select_content");
+
+    for (var i = 0; i < menu_buttons.length; i++) {
+        menu_buttons[i].onclick = function (e) {
+            for (var i = 0; i < menu_contents.length; i++) {
+                menu_contents[i].style.display = "none";
+            }
+            e.target.nextElementSibling.style.display = "block"
+        }
+    }
 }
 
 // Draw a colored path
@@ -80,7 +102,7 @@ function draw_path(path, data, colors, quantity, unit) {
     // Add legend to legend div and un-hide it
     var legend = document.getElementById("legend");
     legend.innerHTML = quantity + "<br>";
-    legend.style.visibility = "visible";
+    legend.style.display = "block";
     for (i = 0; i < color_division.length; i++) {
         var legend_box = document.createElement("div");
         legend_box.className = "legend-box";
@@ -217,10 +239,7 @@ function select_log() {
             data_select_dropdown.add(option);
         }
 
-        var log_data_details = document.getElementById("data_details");
-        log_data_details.open = true;
-        var log_select_details = document.getElementById("log_select_details");
-        log_select_details.open = false;
+        menu_buttons[3].click();
     }
 }
 
@@ -274,13 +293,8 @@ function load_log_input() {
         }
     }
 
-    // Expand Log Select Detail
-    var log_select_details = document.getElementById("log_select_details");
-    log_select_details.open = true;
-
-    // Contract Select Log View
-    var log_load_details = document.getElementById("log_load_details");
-    log_load_details.open = false;
+    // Select Log Select Detail
+    menu_buttons[2].click();
 }
 
 // Handle loading images when Load Pictures is pressed

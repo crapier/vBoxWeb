@@ -30,7 +30,7 @@ body {
     width: 250px;
     padding: 5px 5px 5px 5px;
     margin-left: 25px;
-    visibility: hidden;
+    display: none;
 }
 
 .legend-box {
@@ -39,3 +39,36 @@ body {
     display: inline-block;
 }
 
+.menu-button {
+    background-color: #007777;
+    border-style: solid;
+    border-width: 5px;
+    border-color: #ffffff;
+    width: 290px;
+    height: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #ffffff;
+
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.menu-content {
+    background-color: #009999;
+    border-style: solid;
+    border-width: 5px;
+    border-color: #aaaaaa;
+    width: 290px;
+
+    display: none;
+    justify-content: center;
+    align-items: center;
+    color: #ffffff;
+    padding: 10px 10px 10px 10px;
+}
