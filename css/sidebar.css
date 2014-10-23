@@ -17,6 +17,8 @@ body {
     height: 100%;
     box-sizing: border-box;
     background:#007777;
+    overflow-y: auto;
+    overflow-x: hidden;
 }
 
 #map-canvas {
@@ -37,6 +39,30 @@ body {
     width: 10px;
     height: 10px;
     display: inline-block;
+}
+
+#graph-popup {
+    color:black;
+    background-color:white;
+    position:fixed;
+    top:0;
+    bottom:0;
+    left:0;
+    right:0;
+    margin:auto;
+    border:5px solid;
+    border-color: #007777;
+    padding:10px;
+    display: none;
+
+    overflow-y: hidden;
+    overflow-x: auto;
+}
+
+#graph-close-button {
+    position: absolute;
+    bottom: 0;
+    right: 0;
 }
 
 .menu-button {
@@ -64,11 +90,8 @@ body {
     border-style: solid;
     border-width: 5px;
     border-color: #aaaaaa;
-    width: 290px;
-
+    width: 270px;
     display: none;
-    justify-content: center;
-    align-items: center;
     color: #ffffff;
     padding: 10px 10px 10px 10px;
 }

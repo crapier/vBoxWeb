@@ -60,6 +60,9 @@ function initialize() {
             e.target.nextElementSibling.style.display = "block"
         }
     }
+
+    // Add listener for resizing window
+    window.addEventListener("resize", handle_resize);
 }
 
 // Draw a colored path
@@ -322,6 +325,80 @@ function load_pic_input() {
 
             pic_reader.readAsDataURL(pic_file);
         }
+    }
+}
+
+function show_graphs() {
+    var log_select = document.getElementById("log_select_dropdown");
+    if (log_select.length > 0 && log_select.value != "No Logs Loaded") {
+        var graph_div = document.getElementById("graph-popup");
+        graph_div.style.display = "block";
+
+        graph_div.style.height = window.innerHeight - 100 + "px";
+        graph_div.style.width = window.innerWidth - 100 + "px";
+
+        parse_log(logs[log_select.selectedIndex]);
+        var parsed_data = logs[log_select.selectedIndex].parsed_data;
+
+        graph_div.innerHTML = '<button id="graph-close-button" onclick="close_graphs()">Close</button>';
+        var i;
+        for (i = 3; i < parsed_data[0].length; i++) {
+            graph_div.innerHTML = graph_div.innerHTML + '<canvas id="chart-' + (i - 2) + '" width="600" height="600"> </canvas>';
+        }
+
+        var timestamps = [];
+        var increment = Math.floor(parsed_data.length/10);
+        for(i = 1; i < parsed_data.length; i++) {
+            if ((i-1) % increment == 0) {
+                timestamps[i-1] = parsed_data[i][0];
+            }
+            else {
+                timestamps[i-1] = "";
+            }
+        }
+
+        for (i = 3; i < parsed_data[0].length; i++) {
+            var data = [];
+            for(var j = 1; j < parsed_data.length; j++) {
+                data[j-1] = parseFloat(parsed_data[j][i]);
+            }
+
+            // Create and draw the chart
+            var ctx = document.getElementById("chart-" + (i-2)).getContext("2d");
+            var chart_data = {
+                labels: timestamps,
+                datasets: [
+                    {
+                        label: "My First dataset",
+                        fillColor: "rgba(220,220,220,0.2)",
+                        strokeColor: "rgba(220,220,220,1)",
+                        pointColor: "rgba(220,220,220,1)",
+                        pointStrokeColor: "#fff",
+                        pointHighlightFill: "#fff",
+                        pointHighlightStroke: "rgba(220,220,220,1)",
+                        data: data
+                    }
+                ]
+            };
+            var options = {
+                bezierCurve: false,
+                datasetFill: false
+            };
+            var chart = new Chart(ctx).Line(chart_data, options);
+        }
+    }
+}
+
+function close_graphs() {
+    var graph_div = document.getElementById("graph-popup");
+    graph_div.style.display = "none";
+}
+
+function handle_resize(event) {
+    var graph_div = document.getElementById("graph-popup");
+    if (graph_div.style.display == "block") {
+        graph_div.style.height = window.innerHeight - 100 + "px";
+        graph_div.style.width = window.innerWidth - 100 + "px";
     }
 }
 
