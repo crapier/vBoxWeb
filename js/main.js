@@ -206,7 +206,7 @@ function draw_data(log_file_info, data_selection) {
 
     // Create LatLng objects
     for(var i = 1; i < log_file_info.parsed_data.length; i++) {
-        path[i-1] = new google.maps.LatLng(parseFloat(log_file_info.parsed_data[i][0]), parseFloat(log_file_info.parsed_data[i][1]));
+        path[i-1] = new google.maps.LatLng(parseFloat(log_file_info.parsed_data[i][1]), parseFloat(log_file_info.parsed_data[i][2]));
         data[i-1] = parseFloat(log_file_info.parsed_data[i][data_selection]);
     }
 
@@ -219,7 +219,7 @@ function select_data(){
     var log_select = document.getElementById("log_select_dropdown");
     var data_select = document.getElementById("data_select_dropdown");
     if (data_select.length > 0 && data_select.value != "No Data Loaded") {
-        draw_data(logs[log_select.selectedIndex], data_select.selectedIndex + 2);
+        draw_data(logs[log_select.selectedIndex], data_select.selectedIndex + 3);
     }
 }
 
@@ -233,7 +233,7 @@ function select_log() {
         while (data_select_dropdown.length > 0) {
             data_select_dropdown.remove(0);
         }
-        for (var i = 2; i < logs[log_select.selectedIndex].parsed_data[0].length; i++) {
+        for (var i = 3; i < logs[log_select.selectedIndex].parsed_data[0].length; i++) {
             var option = document.createElement("option");
             option.text = logs[log_select.selectedIndex].parsed_data[0][i].split("-")[0];
             data_select_dropdown.add(option);
