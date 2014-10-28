@@ -8,6 +8,9 @@ var log_extension = /.*\.(log)$/;
 // Array of Log_File_Info
 var logs = [];
 
+// Array of Chart.js charts
+var charts = [];
+
 // Regular expression for
 var picture_extension = /.*\.(jpg)$/;
 // Array of Pic_File_Info
@@ -63,6 +66,54 @@ function initialize() {
 
     // Add listener for resizing window
     window.addEventListener("resize", handle_resize);
+}
+
+var click_info = new google.maps.InfoWindow({
+    content: "Empty"
+});
+
+function polyline_click (event) {
+    var latlng = event.latLng;
+    var minDistance = 999999999999;
+    var index = -1;
+
+    var log_select = document.getElementById("log_select_dropdown");
+    var parsed_data = logs[log_select.selectedIndex].parsed_data;
+
+    for (var i = 1; i < parsed_data.length; i++) {
+        var dist = Math.sqrt(Math.pow((latlng.lat() - parsed_data[i][1]), 2) + Math.pow((latlng.lng() - parsed_data[i][2]), 2));
+        if (dist < minDistance) {
+            index = i;
+            minDistance = dist;
+        }
+    }
+
+    if (index != -1) {
+        click_info.setPosition(latlng);
+        var div = document.createElement("div");
+        div.innerHTML = '<div>' + parsed_data[index][0] + '<br>';
+        for (i = 3; i < parsed_data[0].length; i++) {
+            div.innerHTML += parsed_data[0][i].split('-')[0] + ": " + parsed_data[index][i] + " " + parsed_data[0][i].split('-')[1] + '<br>';
+        }
+
+        var timestamp = parseInt(parsed_data[index][0]);
+        var time_diff = 1000000;
+        var img_index = -1;
+        for (i = 0; i < images.length; i++) {
+            var diff = Math.abs(timestamp - parseInt(images[i].filename.substr(0, images[i].filename.length - 4)))
+            console.log(diff);
+            if (diff < time_diff) {
+                img_index = i;
+                time_diff = diff;
+            }
+        }
+        div.innerHTML += '</div>';
+        if (img_index != -1) {
+            div.appendChild(images[img_index].img);
+        }
+        click_info.content = div;
+        click_info.open(map);
+    }
 }
 
 // Draw a colored path
@@ -165,6 +216,7 @@ function draw_path(path, data, colors, quantity, unit) {
         });
 
         polylines[polylines.length - 1].setMap(map);
+        google.maps.event.addListener(polylines[polylines.length-1], 'click', polyline_click);
     }
 
     // Find the southwest and northeast region for the path
@@ -296,8 +348,8 @@ function load_log_input() {
         }
     }
 
-    // Select Log Select Detail
-    menu_buttons[2].click();
+    // Select Load Pictures
+    menu_buttons[1].click();
 }
 
 // Handle loading images when Load Pictures is pressed
@@ -326,6 +378,9 @@ function load_pic_input() {
             pic_reader.readAsDataURL(pic_file);
         }
     }
+
+    // Select Log Select Detail
+    menu_buttons[2].click();
 }
 
 function show_graphs() {
@@ -341,9 +396,19 @@ function show_graphs() {
         var parsed_data = logs[log_select.selectedIndex].parsed_data;
 
         graph_div.innerHTML = '<button id="graph-close-button" onclick="close_graphs()">Close</button>';
+        var table = document.createElement("TABLE");
+        graph_div.appendChild(table);
         var i;
+        var title_row = table.insertRow(0);
         for (i = 3; i < parsed_data[0].length; i++) {
-            graph_div.innerHTML = graph_div.innerHTML + '<canvas id="chart-' + (i - 2) + '" width="600" height="600"> </canvas>';
+            var cell_title = title_row.insertCell(i-3);
+            cell_title.style.textAlign = 'center';
+            cell_title.innerHTML =  parsed_data[0][i];
+        }
+        var graph_row = table.insertRow(1);
+        for (i = 3; i < parsed_data[0].length; i++) {
+            var cell_graph = graph_row.insertCell(i-3);
+            cell_graph.innerHTML = '<canvas id="chart-' + (i - 2) + '" width="600" height="' + (window.innerHeight - 150) + '"> </canvas>';
         }
 
         var timestamps = [];
@@ -357,6 +422,7 @@ function show_graphs() {
             }
         }
 
+        charts = [];
         for (i = 3; i < parsed_data[0].length; i++) {
             var data = [];
             for(var j = 1; j < parsed_data.length; j++) {
@@ -382,9 +448,11 @@ function show_graphs() {
             };
             var options = {
                 bezierCurve: false,
-                datasetFill: false
+                datasetFill: false,
+                responsive: true,
+                maintainAspectRatio: false
             };
-            var chart = new Chart(ctx).Line(chart_data, options);
+            charts[charts.length] = new Chart(ctx).Line(chart_data, options);
         }
     }
 }
@@ -399,6 +467,20 @@ function handle_resize(event) {
     if (graph_div.style.display == "block") {
         graph_div.style.height = window.innerHeight - 100 + "px";
         graph_div.style.width = window.innerWidth - 100 + "px";
+
+        var log_select = document.getElementById("log_select_dropdown");
+        if (log_select.length > 0 && log_select.value != "No Logs Loaded") {
+            var parsed_data = logs[log_select.selectedIndex].parsed_data;
+            if (parsed_data) {
+                for (var i = 3; i < parsed_data[0].length; i++) {
+                    var canvas = document.getElementById('chart-' + (i - 2));
+                    if (canvas) {
+                        canvas.height = window.innerHeight - 150;
+                        canvas.style.height = (window.innerHeight - 150) + "px";
+                    }
+                }
+            }
+        }
     }
 }
 
