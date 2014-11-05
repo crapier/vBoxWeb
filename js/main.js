@@ -100,8 +100,9 @@ function polyline_click (event) {
         var time_diff = 1000000;
         var img_index = -1;
         for (i = 0; i < images.length; i++) {
-            var diff = Math.abs(timestamp - parseInt(images[i].filename.substr(0, images[i].filename.length - 4)))
-            console.log(diff);
+            var diff = Math.abs(timestamp - parseInt(images[i].filename.substr(0, images[i].filename.length - 4)));
+            console.log("TS: " + timestamp + ",ImgTS: " + parseInt(images[i].filename.substr(0, images[i].filename.length - 4)));
+            console.log("Diff: " + diff);
             if (diff < time_diff) {
                 img_index = i;
                 time_diff = diff;
