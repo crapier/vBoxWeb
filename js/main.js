@@ -400,6 +400,84 @@ function show_graphs() {
         var table = document.createElement("TABLE");
         graph_div.appendChild(table);
         var i;
+
+        var graph_row = table.insertRow(0);
+        for (i = 3; i < parsed_data[0].length; i++) {
+            var cell_graph = graph_row.insertCell(i-3);
+            cell_graph.innerHTML = '<div id="chart-' + (i - 2) + '"> </canvas>';
+        }
+
+        var timestamps = "";
+        for (i = 1; i < parsed_data.length-1; i++) {
+            timestamps += parsed_data[i][0] + "|"
+        }
+        timestamps += parsed_data[parsed_data.length-1][0];
+
+        for (i = 3; i < parsed_data[0].length; i++) {
+            var data = "";
+            for (var j = 1; j < parsed_data.length-1; j++) {
+                data += parsed_data[j][i] + "|";
+            }
+            data += parsed_data[parsed_data.length-1][i];
+
+            var newChart = new FusionCharts({
+                "type": "zoomline",
+                "renderAt": "chart-" + (i-2),
+                "width": "500",
+                "height": "" + (window.innerHeight - 150),
+                "dataFormat": "json",
+                "dataSource": {
+                    "chart": {
+                        "caption": parsed_data[0][3].split("-")[0],
+                        "subcaption": "",
+                        "yaxisname": parsed_data[0][3].split("-")[0] + " (In " + parsed_data[0][3].split("-")[1] + ")",
+                        "xaxisname": "Timestamp",
+                        "yaxisminValue": "0",
+                        "yaxismaxValue": "150",
+                        "forceAxisLimits" : "1",
+                        "pixelsPerPoint": "0",
+                        "pixelsPerLabel": "30",
+                        "lineThickness": "1",
+                        "compactdatamode" : "1",
+                        "dataseparator" : "|",
+                        "labelHeight": "30",
+                        "theme": "fint"
+                    },
+                    "categories": [{
+                        "category": timestamps
+                    }],
+                    "dataset": [{
+
+                        "data": data
+                    }]
+                }
+            });
+
+            newChart.render();
+        }
+
+
+
+
+    }
+}
+
+/*function show_graphs() {
+    var log_select = document.getElementById("log_select_dropdown");
+    if (log_select.length > 0 && log_select.value != "No Logs Loaded") {
+        var graph_div = document.getElementById("graph-popup");
+        graph_div.style.display = "block";
+
+        graph_div.style.height = window.innerHeight - 100 + "px";
+        graph_div.style.width = window.innerWidth - 100 + "px";
+
+        parse_log(logs[log_select.selectedIndex]);
+        var parsed_data = logs[log_select.selectedIndex].parsed_data;
+
+        graph_div.innerHTML = '<button id="graph-close-button" onclick="close_graphs()">Close</button>';
+        var table = document.createElement("TABLE");
+        graph_div.appendChild(table);
+        var i;
         var title_row = table.insertRow(0);
         for (i = 3; i < parsed_data[0].length; i++) {
             var cell_title = title_row.insertCell(i-3);
@@ -436,10 +514,10 @@ function show_graphs() {
                 labels: timestamps,
                 datasets: [
                     {
-                        label: "My First dataset",
-                        fillColor: "rgba(220,220,220,0.2)",
-                        strokeColor: "rgba(220,220,220,1)",
-                        pointColor: "rgba(220,220,220,1)",
+                        label: "Data",
+                        fillColor: "rgba(0,0,0,0.2)",
+                        strokeColor: "rgba(0,0,0,1)",
+                        pointColor: "rgba(0,0,0,1)",
                         pointStrokeColor: "#fff",
                         pointHighlightFill: "#fff",
                         pointHighlightStroke: "rgba(220,220,220,1)",
@@ -448,15 +526,19 @@ function show_graphs() {
                 ]
             };
             var options = {
+                animation: false,
+                showTooltips: false,
                 bezierCurve: false,
                 datasetFill: false,
                 responsive: true,
-                maintainAspectRatio: false
+                maintainAspectRatio: false,
+                pointDot: false,
+                scaleShowGridLines: false
             };
             charts[charts.length] = new Chart(ctx).Line(chart_data, options);
         }
     }
-}
+}*/
 
 function close_graphs() {
     var graph_div = document.getElementById("graph-popup");
@@ -474,10 +556,10 @@ function handle_resize(event) {
             var parsed_data = logs[log_select.selectedIndex].parsed_data;
             if (parsed_data) {
                 for (var i = 3; i < parsed_data[0].length; i++) {
-                    var canvas = document.getElementById('chart-' + (i - 2));
-                    if (canvas) {
-                        canvas.height = window.innerHeight - 150;
-                        canvas.style.height = (window.innerHeight - 150) + "px";
+                    var div = document.getElementById('chart-' + (i - 2));
+                    if (div) {
+                        div.height = window.innerHeight - 150;
+                        div.style.height = (window.innerHeight - 150) + "px";
                     }
                 }
             }
