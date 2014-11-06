@@ -97,3 +97,11 @@ body {
     color: #ffffff;
     padding: 10px 10px 10px 10px;
 }
+
+.infobox {
+    display:inline-block;
+}
+
+.infotable {
+    display:inline-block;
+}

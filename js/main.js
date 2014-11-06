@@ -8,7 +8,7 @@ var log_extension = /.*\.(log)$/;
 // Array of Log_File_Info
 var logs = [];
 
-// Array of Chart.js charts
+// Array of Charts
 var charts = [];
 
 // Regular expression for
@@ -69,7 +69,8 @@ function initialize() {
 }
 
 var click_info = new google.maps.InfoWindow({
-    content: "Empty"
+    content: "Empty",
+    maxWidth: 1000
 });
 
 function polyline_click (event) {
@@ -90,10 +91,12 @@ function polyline_click (event) {
 
     if (index != -1) {
         click_info.setPosition(latlng);
-        var div = document.createElement("div");
-        div.innerHTML = '<div>' + parsed_data[index][0] + '<br>';
+
+        var table = document.createElement("table");
+        table.setAttribute("class", "infotable");
+        table.insertRow(0).insertCell(0).innerHTML = parse_timestamp(parsed_data[index][0]);
         for (i = 3; i < parsed_data[0].length; i++) {
-            div.innerHTML += parsed_data[0][i].split('-')[0] + ": " + parsed_data[index][i] + " " + parsed_data[0][i].split('-')[1] + '<br>';
+            table.insertRow(i-2).insertCell(0).innerHTML = parsed_data[0][i].split('-')[0] + ": " + parsed_data[index][i] + " " + parsed_data[0][i].split('-')[1];
         }
 
         var timestamp = parseInt(parsed_data[index][0]);
@@ -101,19 +104,22 @@ function polyline_click (event) {
         var img_index = -1;
         for (i = 0; i < images.length; i++) {
             var diff = Math.abs(timestamp - parseInt(images[i].filename.substr(0, images[i].filename.length - 4)));
-            console.log("TS: " + timestamp + ",ImgTS: " + parseInt(images[i].filename.substr(0, images[i].filename.length - 4)));
-            console.log("Diff: " + diff);
             if (diff < time_diff) {
                 img_index = i;
                 time_diff = diff;
             }
         }
-        div.innerHTML += '</div>';
+
+        var div = document.createElement("div");
+        div.setAttribute("class", "infobox");
+        div.appendChild(table);
+
         if (img_index != -1) {
             div.appendChild(images[img_index].img);
         }
-        click_info.content = div;
+
         click_info.open(map);
+        click_info.setContent(div);
     }
 }
 
@@ -164,10 +170,10 @@ function draw_path(path, data, colors, quantity, unit) {
         legend_box.style.backgroundColor = colors[i];
         legend.appendChild(legend_box);
         if (i == 0) {
-            legend.innerHTML = legend.innerHTML + " " + min + " - " + color_division[i] + " " + unit + "<br>";
+            legend.innerHTML = legend.innerHTML + " " + Math.round(min) + " - " + Math.round(color_division[i]) + " " + unit + "<br>";
         }
         else {
-            legend.innerHTML = legend.innerHTML + " " + color_division[i-1] + 1 + " - " + color_division[i] + " " + unit + "<br>";
+            legend.innerHTML = legend.innerHTML + " " + Math.round(color_division[i-1] + 1) + " - " + Math.round(color_division[i]) + " " + unit + "<br>";
         }
     }
 
@@ -384,6 +390,29 @@ function load_pic_input() {
     menu_buttons[2].click();
 }
 
+function parse_timestamp(stamp) {
+    var year = stamp.substr(0, 4);
+    var month = stamp.substr(4, 2);
+    var day = stamp.substr(6, 2);
+    var hour = stamp.substr(8, 2);
+    var minute = stamp.substr(10, 2);
+    var second = stamp.substr(12, 2);
+    var milisecond = stamp.substr(14, 3);
+
+    return hour + ":" + minute + ":" + second + ":" + milisecond + " " + month + "/" + day + "/" + year;
+}
+
+function parse_timestamp_no_ms(stamp) {
+    var year = stamp.substr(0, 4);
+    var month = stamp.substr(4, 2);
+    var day = stamp.substr(6, 2);
+    var hour = stamp.substr(8, 2);
+    var minute = stamp.substr(10, 2);
+    var second = stamp.substr(12, 2);
+
+    return hour + ":" + minute + ":" + second + " " + month + "/" + day + "/" + year;
+}
+
 function show_graphs() {
     var log_select = document.getElementById("log_select_dropdown");
     if (log_select.length > 0 && log_select.value != "No Logs Loaded") {
@@ -409,10 +438,11 @@ function show_graphs() {
 
         var timestamps = "";
         for (i = 1; i < parsed_data.length-1; i++) {
-            timestamps += parsed_data[i][0] + "|"
+            timestamps += parse_timestamp_no_ms(parsed_data[i][0]) + "|";
         }
         timestamps += parsed_data[parsed_data.length-1][0];
 
+        charts = [];
         for (i = 3; i < parsed_data[0].length; i++) {
             var data = "";
             for (var j = 1; j < parsed_data.length-1; j++) {
@@ -420,44 +450,39 @@ function show_graphs() {
             }
             data += parsed_data[parsed_data.length-1][i];
 
-            var newChart = new FusionCharts({
+            charts[charts.length] = new FusionCharts({
                 "type": "zoomline",
                 "renderAt": "chart-" + (i-2),
-                "width": "500",
+                "width": "800",
                 "height": "" + (window.innerHeight - 150),
                 "dataFormat": "json",
                 "dataSource": {
                     "chart": {
-                        "caption": parsed_data[0][3].split("-")[0],
-                        "subcaption": "",
-                        "yaxisname": parsed_data[0][3].split("-")[0] + " (In " + parsed_data[0][3].split("-")[1] + ")",
+                        "caption": parsed_data[0][i].split("-")[0],
+                        "yaxisname": parsed_data[0][i].split("-")[0] + " (in " + parsed_data[0][i].split("-")[1] + ")",
                         "xaxisname": "Timestamp",
                         "yaxisminValue": "0",
-                        "yaxismaxValue": "150",
+                        "yaxismaxValue": "0",
                         "forceAxisLimits" : "1",
                         "pixelsPerPoint": "0",
                         "pixelsPerLabel": "30",
                         "lineThickness": "1",
                         "compactdatamode" : "1",
                         "dataseparator" : "|",
-                        "labelHeight": "30",
+                        "labelHeight": "50",
+                        "numVisibleLabels": "10",
                         "theme": "fint"
                     },
                     "categories": [{
                         "category": timestamps
                     }],
                     "dataset": [{
-
                         "data": data
                     }]
                 }
             });
-
-            newChart.render();
+            charts[charts.length-1].render();
         }
-
-
-
 
     }
 }
@@ -473,18 +498,8 @@ function handle_resize(event) {
         graph_div.style.height = window.innerHeight - 100 + "px";
         graph_div.style.width = window.innerWidth - 100 + "px";
 
-        var log_select = document.getElementById("log_select_dropdown");
-        if (log_select.length > 0 && log_select.value != "No Logs Loaded") {
-            var parsed_data = logs[log_select.selectedIndex].parsed_data;
-            if (parsed_data) {
-                for (var i = 3; i < parsed_data[0].length; i++) {
-                    var div = document.getElementById('chart-' + (i - 2));
-                    if (div) {
-                        div.height = window.innerHeight - 150;
-                        div.style.height = (window.innerHeight - 150) + "px";
-                    }
-                }
-            }
+        for (var i = 0; i < charts.length; i++) {
+            charts[i].resizeTo(800, window.innerHeight - 150);
         }
     }
 }
