@@ -3,6 +3,15 @@ body {
     width: 100%;
     position: absolute;
 }
+
+input[type="button"], input[type="submit"], input[type="reset"], input[type="file"]::-webkit-file-upload-button, button {
+    background: #FFFFFF;
+    color: #000000;
+    border: 1px solid;
+    border-color: #aaaaaa;
+    padding: 1px 10px 1px 10px;
+}
+
 .container {
     position: relative;;
     width: 100%;
@@ -104,4 +113,10 @@ body {
 
 .infotable {
     display:inline-block;
+}
+
+#sidebar-toggle {
+    position: absolute;
+    bottom: 0;
+    right: 0;
 }

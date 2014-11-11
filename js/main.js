@@ -2,6 +2,9 @@
 var map;
 // Current polylines drawn
 var polylines = [];
+// Start and end Marker
+var start_marker;
+var end_marker;
 
 // Regular expression for log files
 var log_extension = /.*\.(log)$/;
@@ -16,8 +19,12 @@ var picture_extension = /.*\.(jpg)$/;
 // Array of Pic_File_Info
 var images = [];
 
+// Menu Button and Content Divs
 var menu_buttons = [];
 var menu_contents = [];
+
+// Toggle sidebar bool
+var sidebar_visible = true;
 
 // Structure for Log file information
 function Log_File_Info() {
@@ -90,7 +97,7 @@ function polyline_click (event) {
     }
 
     if (index != -1) {
-        click_info.setPosition(latlng);
+        click_info.setPosition(new google.maps.LatLng(parsed_data[index][1], parsed_data[index][2]));
 
         var table = document.createElement("table");
         table.setAttribute("class", "infotable");
@@ -212,6 +219,38 @@ function draw_path(path, data, colors, quantity, unit) {
     line_segments[line_segments.length] = current_segment;
     line_colors[line_colors.length] = previous_color;
 
+    // Remove start and end marker if present
+    if (start_marker) {
+        start_marker.setMap(null);
+        end_marker.setMap(null);
+    }
+
+    // Create and Draw the Start and End position Markers
+    start_marker = new google.maps.Marker({
+        position: path[0],
+        map: map,
+        icon: {
+            url: "img/startPosition.png",
+            anchor: new google.maps.Point(20, 20)
+        },
+        title: "Start",
+        cursor: "Start",
+        clickable: false,
+        zIndex: 40
+    });
+    end_marker = new google.maps.Marker({
+        position: path[path.length-1],
+        map: map,
+        icon: {
+            url: "img/endPosition.png",
+            anchor: new google.maps.Point(20, 20)
+        },
+        title: "End",
+        cursor: "End",
+        clickable: false,
+        zIndex: 50
+    });
+
     // Create and draw the individual polylines
     for (i = 0; i < line_segments.length; i++) {
         polylines[polylines.length] = new google.maps.Polyline({
@@ -219,7 +258,8 @@ function draw_path(path, data, colors, quantity, unit) {
             geodesic: true,
             strokeColor: colors[line_colors[i]],
             strokeOpacity: 1.0,
-            strokeWeight: 5
+            strokeWeight: 5,
+            zIndex: 100
         });
 
         polylines[polylines.length - 1].setMap(map);
@@ -301,7 +341,28 @@ function select_log() {
             data_select_dropdown.add(option);
         }
 
+        // Hide the legend if it was shown
+        var legend = document.getElementById("legend");
+        legend.style.display = "none";
+
+        // Remove all current polylines from the map
+        for (i = 0; i < polylines.length; i++) {
+            polylines[i].setMap(null);
+        }
+        polylines = [];
+
+        // Remove start and end marker if present
+        if (start_marker) {
+            start_marker.setMap(null);
+            end_marker.setMap(null);
+        }
+
+        // Close infowindow
+        click_info.setMap(null);
+
         menu_buttons[3].click();
+
+        select_data();
     }
 }
 
@@ -319,75 +380,104 @@ function parse_log(log_file_info) {
 // Handle loading logs when Load Logs button is pressed
 //  Only read name.log files
 function load_log_input() {
-    // loop control
-    var i;
-    // Clear current logs
-    logs = [];
-
     // Get the file input element for logs
     var log_input = document.getElementById("log_input");
+    // Check that files are actually selected
+    if (log_input.files.length > 0) {
+        // Check that there is at least 1 log to actually load
+        var valid_logs = false;
+        for (i = 0; i < log_input.files.length; i++) {
+            if (log_extension.test(log_input.files[i].name)) {
+                valid_logs = true;
+                break;
+            }
+        }
 
-    // Clear the logs in the log select dropdown
-    var log_select = document.getElementById("log_select_dropdown");
-    while (log_select.length > 0) {
-        log_select.remove(0);
-    }
+        // There are logs to load
+        if (valid_logs) {
+            // loop control
+            var i;
+            // Clear current logs
+            logs = [];
 
-    // Test each selected file to see if its a log and if it is create a
-    //  log info structure for it after reading it in
-    for (i = 0; i < log_input.files.length; i++) {
-        if (log_extension.test(log_input.files[i].name)) {
-            var log_file = log_input.files[i];
-            var log_reader = new FileReader;
-            log_reader.filename = log_file.name;
+            // Clear the logs in the log select dropdown
+            var log_select = document.getElementById("log_select_dropdown");
+            while (log_select.length > 0) {
+                log_select.remove(0);
+            }
 
-            log_reader.onload = function (progress_event) {
-                logs[logs.length] = new Log_File_Info();
-                logs[logs.length - 1].log_data = progress_event.target.result;
-                logs[logs.length - 1].filename = progress_event.target.filename;
+            // Test each selected file to see if its a log and if it is create a
+            //  log info structure for it after reading it in
+            for (i = 0; i < log_input.files.length; i++) {
+                if (log_extension.test(log_input.files[i].name)) {
+                    var log_file = log_input.files[i];
+                    var log_reader = new FileReader;
+                    log_reader.filename = log_file.name;
 
-                var log_option = document.createElement("option");
-                log_option.text = logs[logs.length - 1].filename;
-                log_select.add(log_option);
-            };
+                    log_reader.onload = function (progress_event) {
+                        logs[logs.length] = new Log_File_Info();
+                        logs[logs.length - 1].log_data = progress_event.target.result;
+                        logs[logs.length - 1].filename = progress_event.target.filename;
 
-            log_reader.readAsText(log_file, 'ANSI');
+                        var log_option = document.createElement("option");
+                        log_option.text = logs[logs.length - 1].filename;
+                        log_select.add(log_option);
+                    };
+
+                    log_reader.readAsText(log_file, 'ANSI');
+                }
+            }
+
+            // Select Load Pictures
+            menu_buttons[1].click();
         }
     }
-
-    // Select Load Pictures
-    menu_buttons[1].click();
 }
 
 // Handle loading images when Load Pictures is pressed
 //  Only reads name.jpg files
 function load_pic_input() {
-    // Clear images
-    images = [];
-
     // Get the file input for pictures
     var pic_input = document.getElementById("pic_input");
 
-    // Test each selected file to see if it is an image and create
-    // a pic image info structure for it after reading it in
-    for (var i = 0; i < pic_input.files.length; i++) {
-        if (picture_extension.test(pic_input.files[i].name)) {
-            var pic_file = pic_input.files[i];
-            var pic_reader = new FileReader;
-            pic_reader.filename = pic_file.name;
+    // Check that files are actually selected
+    if (pic_input.files.length > 0) {
+        // Check that there is at least 1 picture to actually load
+        var valid_pic = false;
+        for (i = 0; i < pic_input.files.length; i++) {
+            if (picture_extension.test(pic_input.files[i].name)) {
+                valid_pic = true;
+                break;
+            }
+        }
 
-            pic_reader.onload = function (progress_event) {
-                images[images.length] = new Pic_File_Info();
-                images[images.length-1].img.setAttribute("src", progress_event.target.result);
-                images[images.length-1].filename = progress_event.target.filename;
-            };
+        // There are pics to load
+        if (valid_pic) {
+            // Clear images
+            images = [];
 
-            pic_reader.readAsDataURL(pic_file);
+            // Test each selected file to see if it is an image and create
+            // a pic image info structure for it after reading it in
+            for (var i = 0; i < pic_input.files.length; i++) {
+                if (picture_extension.test(pic_input.files[i].name)) {
+                    var pic_file = pic_input.files[i];
+                    var pic_reader = new FileReader;
+                    pic_reader.filename = pic_file.name;
+
+                    pic_reader.onload = function (progress_event) {
+                        images[images.length] = new Pic_File_Info();
+                        images[images.length-1].img.setAttribute("src", progress_event.target.result);
+                        images[images.length-1].filename = progress_event.target.filename;
+                    };
+
+                    pic_reader.readAsDataURL(pic_file);
+                }
+            }
+
+            // Select Log Select Detail
+            menu_buttons[2].click();
         }
     }
-
-    // Select Log Select Detail
-    menu_buttons[2].click();
 }
 
 function parse_timestamp(stamp) {
@@ -487,11 +577,34 @@ function show_graphs() {
     }
 }
 
+// Handle toggling of the Sidebar
+function toggle_sidebar() {
+    var sidebar = document.getElementById("sidebar");
+    var map_canvas = document.getElementById("map-canvas");
+
+    if (sidebar_visible) {
+        sidebar.style.display = "none";
+        sidebar_visible = false;
+
+        map_canvas.style.marginRight = "0px";
+        google.maps.event.trigger(map, "resize");
+    }
+    else {
+        sidebar.style.display = "block";
+        sidebar_visible = true;
+
+        map_canvas.style.marginRight = "300px";
+        google.maps.event.trigger(map, "resize");
+    }
+}
+
+// Close the graph div if its open
 function close_graphs() {
     var graph_div = document.getElementById("graph-popup");
     graph_div.style.display = "none";
 }
 
+// Handle resizing of the window for elements that need to be resize (graph popup div)
 function handle_resize(event) {
     var graph_div = document.getElementById("graph-popup");
     if (graph_div.style.display == "block") {
