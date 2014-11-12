@@ -170,6 +170,21 @@ function draw_path(path, data, colors, quantity, unit) {
     // Add legend to legend div and un-hide it
     var legend = document.getElementById("legend");
     legend.innerHTML = quantity + "<br>";
+
+    var start_img = document.createElement("img");
+    start_img.src = "img/startPosition.png";
+    start_img.width = 20;
+    start_img.height = 20;
+    legend.appendChild(start_img);
+    legend.innerHTML = legend.innerHTML + " Start ";
+
+    var end_img = document.createElement("img");
+    end_img.src = "img/endPosition.png";
+    end_img.width = 20;
+    end_img.height = 20;
+    legend.appendChild(end_img);
+    legend.innerHTML = legend.innerHTML + " End<br>";
+
     legend.style.display = "block";
     for (i = 0; i < color_division.length; i++) {
         var legend_box = document.createElement("div");
