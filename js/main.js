@@ -41,6 +41,9 @@ function Pic_File_Info() {
 
 // Set options and initialize Google Maps
 function initialize() {
+    var map_container = document.getElementById('map-canvas');
+    //map_container.width = window.innerHeight - 51;
+    //map_container.height = $("#page-wrapper").height();
     // Map options for the Embedded Google Map
     var mapOptions = {
         center: { lat: 30.618989, lng: -96.338653},
@@ -52,27 +55,10 @@ function initialize() {
     // Create the map
     map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
 
-    menu_buttons[menu_buttons.length] = document.getElementById("log_load_button");
-    menu_buttons[menu_buttons.length] = document.getElementById("picture_load_button");
-    menu_buttons[menu_buttons.length] = document.getElementById("log_select_button");
-    menu_buttons[menu_buttons.length] = document.getElementById("data_select_button");
-
-    menu_contents[menu_contents.length] = document.getElementById("log_load_content");
-    menu_contents[menu_contents.length] = document.getElementById("picture_load_content");
-    menu_contents[menu_contents.length] = document.getElementById("log_select_content");
-    menu_contents[menu_contents.length] = document.getElementById("data_select_content");
-
-    for (var i = 0; i < menu_buttons.length; i++) {
-        menu_buttons[i].onclick = function (e) {
-            for (var i = 0; i < menu_contents.length; i++) {
-                menu_contents[i].style.display = "none";
-            }
-            e.target.nextElementSibling.style.display = "block"
-        }
-    }
-
     // Add listener for resizing window
     window.addEventListener("resize", handle_resize);
+
+    handle_resize();
 }
 
 var click_info = new google.maps.InfoWindow({
@@ -621,7 +607,7 @@ function close_graphs() {
 
 // Handle resizing of the window for elements that need to be resize (graph popup div)
 function handle_resize(event) {
-    var graph_div = document.getElementById("graph-popup");
+    /*var graph_div = document.getElementById("graph-popup");
     if (graph_div.style.display == "block") {
         graph_div.style.height = window.innerHeight - 100 + "px";
         graph_div.style.width = window.innerWidth - 100 + "px";
@@ -629,7 +615,12 @@ function handle_resize(event) {
         for (var i = 0; i < charts.length; i++) {
             charts[i].resizeTo(800, window.innerHeight - 150);
         }
-    }
+    }*/
+
+    document.body.style.marginTop = "" + 50 + "px";
+    document.body.style.height = "" + (window.innerHeight - 50) + "px";
+    document.getElementById("wrapper").style.height = "" + (window.innerHeight - 50) + "px";
+    document.getElementById("page-wrapper").style.height = "" + (window.innerHeight - 50) + "px";
 }
 
 // Begin the App
