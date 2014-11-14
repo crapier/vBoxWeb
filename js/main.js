@@ -19,13 +19,6 @@ var picture_extension = /.*\.(jpg)$/;
 // Array of Pic_File_Info
 var images = [];
 
-// Menu Button and Content Divs
-var menu_buttons = [];
-var menu_contents = [];
-
-// Toggle sidebar bool
-var sidebar_visible = true;
-
 // Structure for Log file information
 function Log_File_Info() {
     this.log_data = "";
@@ -41,10 +34,6 @@ function Pic_File_Info() {
 
 // Set options and initialize Google Maps
 function initialize() {
-    var map_container = document.getElementById('map-canvas');
-    //map_container.width = window.innerHeight - 51;
-    //map_container.height = $("#page-wrapper").height();
-    // Map options for the Embedded Google Map
     var mapOptions = {
         center: { lat: 30.618989, lng: -96.338653},
         zoom: 16,
@@ -58,7 +47,14 @@ function initialize() {
     // Add listener for resizing window
     window.addEventListener("resize", handle_resize);
 
+    // Initial resize to fix Bootstrap size to fill whole area
     handle_resize();
+}
+
+function stop(e) {
+    if (!e) var e = window.event;
+    e.cancelBubble = true;
+    if (e.stopPropagation) e.stopPropagation();
 }
 
 var click_info = new google.maps.InfoWindow({
@@ -116,6 +112,10 @@ function polyline_click (event) {
     }
 }
 
+var legend = document.createElement("div");
+legend.id = "legend";
+$(".nav.navbar-nav.side-nav")[0].appendChild(legend);
+
 // Draw a colored path
 //  path - array of LatLng locations
 //  data - array of data corresponding to path points
@@ -154,7 +154,6 @@ function draw_path(path, data, colors, quantity, unit) {
     color_division[color_division.length] = max;
 
     // Add legend to legend div and un-hide it
-    var legend = document.getElementById("legend");
     legend.innerHTML = quantity + "<br>";
 
     var start_img = document.createElement("img");
@@ -343,7 +342,6 @@ function select_log() {
         }
 
         // Hide the legend if it was shown
-        var legend = document.getElementById("legend");
         legend.style.display = "none";
 
         // Remove all current polylines from the map
@@ -361,7 +359,8 @@ function select_log() {
         // Close infowindow
         click_info.setMap(null);
 
-        menu_buttons[3].click();
+        // Select Select Log
+        document.getElementById("menu-select-data").click();
 
         select_data();
     }
@@ -430,7 +429,7 @@ function load_log_input() {
             }
 
             // Select Load Pictures
-            menu_buttons[1].click();
+            document.getElementById("menu-load-pictures").click();
         }
     }
 }
@@ -475,8 +474,8 @@ function load_pic_input() {
                 }
             }
 
-            // Select Log Select Detail
-            menu_buttons[2].click();
+            // Select Log Select
+            document.getElementById("menu-select-log").click();
         }
     }
 }
@@ -504,14 +503,17 @@ function parse_timestamp_no_ms(stamp) {
     return hour + ":" + minute + ":" + second + " " + month + "/" + day + "/" + year;
 }
 
+var graph_div = document.createElement("div");
+graph_div.id = "graph-popup";
+document.getElementById("page-wrapper").appendChild(graph_div);
+
 function show_graphs() {
     var log_select = document.getElementById("log_select_dropdown");
     if (log_select.length > 0 && log_select.value != "No Logs Loaded") {
-        var graph_div = document.getElementById("graph-popup");
         graph_div.style.display = "block";
 
-        graph_div.style.height = window.innerHeight - 100 + "px";
-        graph_div.style.width = window.innerWidth - 100 + "px";
+        graph_div.style.height = window.innerHeight - 50 + "px";
+        graph_div.style.top = "-" + (window.innerHeight - 50) + "px";
 
         parse_log(logs[log_select.selectedIndex]);
         var parsed_data = logs[log_select.selectedIndex].parsed_data;
@@ -578,49 +580,25 @@ function show_graphs() {
     }
 }
 
-// Handle toggling of the Sidebar
-function toggle_sidebar() {
-    var sidebar = document.getElementById("sidebar");
-    var map_canvas = document.getElementById("map-canvas");
-
-    if (sidebar_visible) {
-        sidebar.style.display = "none";
-        sidebar_visible = false;
-
-        map_canvas.style.marginRight = "0px";
-        google.maps.event.trigger(map, "resize");
-    }
-    else {
-        sidebar.style.display = "block";
-        sidebar_visible = true;
-
-        map_canvas.style.marginRight = "300px";
-        google.maps.event.trigger(map, "resize");
-    }
-}
-
 // Close the graph div if its open
 function close_graphs() {
-    var graph_div = document.getElementById("graph-popup");
     graph_div.style.display = "none";
 }
 
 // Handle resizing of the window for elements that need to be resize (graph popup div)
 function handle_resize(event) {
-    /*var graph_div = document.getElementById("graph-popup");
     if (graph_div.style.display == "block") {
-        graph_div.style.height = window.innerHeight - 100 + "px";
-        graph_div.style.width = window.innerWidth - 100 + "px";
-
+        graph_div.style.height = window.innerHeight - 50 + "px";
+        graph_div.style.top = "-" + (window.innerHeight - 50) + "px";
         for (var i = 0; i < charts.length; i++) {
             charts[i].resizeTo(800, window.innerHeight - 150);
         }
-    }*/
+    }
 
-    document.body.style.marginTop = "" + 50 + "px";
-    document.body.style.height = "" + (window.innerHeight - 50) + "px";
-    document.getElementById("wrapper").style.height = "" + (window.innerHeight - 50) + "px";
-    document.getElementById("page-wrapper").style.height = "" + (window.innerHeight - 50) + "px";
+    document.body.style.marginTop = 50 + "px";
+    document.body.style.height = window.innerHeight - 50 + "px";
+    document.getElementById("wrapper").style.height = window.innerHeight - 50 + "px";
+    document.getElementById("page-wrapper").style.height =  window.innerHeight - 50 + "px";
 }
 
 // Begin the App

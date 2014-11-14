@@ -6,6 +6,17 @@ html {
     overflow-y: visible;
 }
 
+.navbar-nav>li {
+    float: none;
+}
+
+.dropdown-menu {
+    width: 100%;
+    border-radius: 0;
+    position: relative;
+    float: none;
+}
+
 #map-canvas {
     height: 100%;
 }
@@ -13,10 +24,8 @@ html {
 #legend {
     color: #000000;
     background-color: #ffff88;
-    width: 250px;
+    width: 225px;
     padding: 5px 5px 5px 5px;
-    margin-left: 5px;
-    margin-top: 10px;
     display: none;
 }
 
@@ -29,14 +38,11 @@ html {
 #graph-popup {
     color:black;
     background-color:white;
-    position:fixed;
-    top:0;
-    bottom:0;
-    left:0;
-    right:0;
-    margin:auto;
+    position:relative;
+    width: 100%;
+    box-sizing: border-box;
     border:5px solid;
-    border-color: #007777;
+    border-color: #ffffff;
     padding:10px;
     display: none;
 

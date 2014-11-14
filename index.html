@@ -45,13 +45,42 @@
         <div class="collapse navbar-collapse navbar-ex1-collapse">
             <ul class="nav navbar-nav side-nav"> <!-- side NavBar -->
                 <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-caret-square-o-down"></i> Load Logs <b class="caret"></b></a>
-                    <ul class="dropdown-menu">
-                        <li>Blah</li>
-                        <li>Blah</li>
+                    <a id="menu-load-logs" href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-caret-square-o-down"></i> Load Logs <b class="caret"></b></a>
+                    <ul class="dropdown-menu" onclick="stop()">
+                        <li class="side-list-item"><input type="file" id="log_input" multiple></li>
+                        <li><button onclick="load_log_input()">Load</button></li>
                     </ul>
                 </li>
-
+                <li class="dropdown">
+                    <a id="menu-load-pictures" href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-caret-square-o-down"></i> Load Pictures <b class="caret"></b></a>
+                    <ul class="dropdown-menu" onclick="stop()">
+                        <li class="side-list-item"><input type="file" id="pic_input" multiple></li>
+                        <li><button onclick="load_pic_input()">Load</button></li>
+                    </ul>
+                </li>
+                <li class="dropdown">
+                    <a id="menu-select-log" href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-caret-square-o-down"></i> Select Log <b class="caret"></b></a>
+                    <ul class="dropdown-menu" onclick="stop()">
+                        <li class="side-list-item">
+                            <select id="log_select_dropdown">
+                                <option value="No Logs Loaded">No Logs Loaded</option>
+                             </select>
+                        </li>
+                        <li><button onclick="select_log()">Select</button></li>
+                    </ul>
+                </li>
+                <li class="dropdown">
+                    <a id="menu-select-data" href="#" class="dropdown-toggle" data-toggle="dropdown"><i class="fa fa-caret-square-o-down"></i> Select Log <b class="caret"></b></a>
+                    <ul class="dropdown-menu" onclick="stop()">
+                        <li class="side-list-item">
+                            <select id="data_select_dropdown">
+                                <option value="No Data Loaded">No Data Loaded</option>
+                            </select>
+                        </li>
+                        <li><button onclick="select_data()">Select</button></li>
+                        <li><button onclick="show_graphs()">Graphs</button></li>
+                    </ul>
+                </li>
             </ul>
 
         </div><!-- /.navbar-collapse -->
@@ -62,10 +91,6 @@
     </div><!-- /#page-wrapper -->
 
 </div><!-- /#wrapper -->
-
-
-
-
 
     <!-- Bootstrap core JavaScript
     ================================================== -->
