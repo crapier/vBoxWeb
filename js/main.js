@@ -49,6 +49,8 @@ function initialize() {
 
     // Initial resize to fix Bootstrap size to fill whole area
     handle_resize();
+
+    // Set the proper width of menu buttons
 }
 
 function stop(e) {
@@ -503,9 +505,33 @@ function parse_timestamp_no_ms(stamp) {
     return hour + ":" + minute + ":" + second + " " + month + "/" + day + "/" + year;
 }
 
+function graph_scroll(event) {
+    document.getElementById("graph-close-button").style.left = event.target.scrollLeft + "px";
+}
+
 var graph_div = document.createElement("div");
 graph_div.id = "graph-popup";
 document.getElementById("page-wrapper").appendChild(graph_div);
+graph_div.addEventListener("scroll", graph_scroll);
+
+function wheel_listener(event) {
+    //wheelDelta is for chrome, detail is for firefox
+    var wheelinfo;
+    if(/Firefox/i.test(navigator.userAgent)) {
+        wheelinfo = -1 * event.detail;
+    }
+    else {
+        wheelinfo = event.wheelDelta;
+    }
+
+    if (graph_div.style.display == "block") {
+        graph_div.scrollLeft -= wheelinfo;
+    }
+}
+
+window.addEventListener("scroll", function(e) {console.log(e);});
+var mousewheelevt=(/Firefox/i.test(navigator.userAgent))? "DOMMouseScroll" : "mousewheel";
+document.addEventListener(mousewheelevt, wheel_listener);
 
 function show_graphs() {
     var log_select = document.getElementById("log_select_dropdown");
