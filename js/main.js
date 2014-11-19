@@ -53,11 +53,13 @@ function initialize() {
     // Set the proper width of menu buttons
 }
 
+// Prevent Menu Lists from closing on clicking
 function stop(e) {
-    if (!e) var e = window.event;
+    if (!e)  e = window.event;
     e.cancelBubble = true;
     if (e.stopPropagation) e.stopPropagation();
 }
+$(".dropdown-menu").click(stop);
 
 var click_info = new google.maps.InfoWindow({
     content: "Empty",
@@ -144,9 +146,17 @@ function draw_path(path, data, colors, quantity, unit) {
         return;
     }
 
-    // Get the minimum and maximum data values
-    var min = Math.min.apply(Math, data);
-    var max = Math.max.apply(Math, data);
+    // Get set of only valid data
+    var validset = [];
+    for (i = 0; i < data.length; i++) {
+        if (!isNaN(data[i])) {
+            validset[validset.length] = data[i];
+        }
+    }
+
+    // Get the minimum and maximum data values from the valid data
+    var min = Math.min.apply(Math, validset);
+    var max = Math.max.apply(Math, validset);
 
     // Find the points to divide the line by color
     var color_division = [];
@@ -155,8 +165,12 @@ function draw_path(path, data, colors, quantity, unit) {
     }
     color_division[color_division.length] = max;
 
+    // No data color
+    colors[colors.length] = "#AAAAAA";
+
     // Add legend to legend div and un-hide it
     legend.innerHTML = quantity + "<br>";
+    legend.style.display = "block";
 
     var start_img = document.createElement("img");
     start_img.src = "img/startPosition.png";
@@ -172,17 +186,32 @@ function draw_path(path, data, colors, quantity, unit) {
     legend.appendChild(end_img);
     legend.innerHTML = legend.innerHTML + " End<br>";
 
-    legend.style.display = "block";
-    for (i = 0; i < color_division.length; i++) {
+    if (min == Infinity) {
         var legend_box = document.createElement("div");
         legend_box.className = "legend-box";
-        legend_box.style.backgroundColor = colors[i];
+        legend_box.style.backgroundColor = colors[colors.length -1];
         legend.appendChild(legend_box);
-        if (i == 0) {
-            legend.innerHTML = legend.innerHTML + " " + Math.round(min) + " - " + Math.round(color_division[i]) + " " + unit + "<br>";
+        legend.innerHTML = legend.innerHTML + " No Data<br>";
+    }
+    else {
+        if (validset.length < data.length) {
+            legend_box = document.createElement("div");
+            legend_box.className = "legend-box";
+            legend_box.style.backgroundColor = colors[colors.length -1];
+            legend.appendChild(legend_box);
+            legend.innerHTML = legend.innerHTML + " No Data<br>";
         }
-        else {
-            legend.innerHTML = legend.innerHTML + " " + Math.round(color_division[i-1] + 1) + " - " + Math.round(color_division[i]) + " " + unit + "<br>";
+        for (i = 0; i < color_division.length; i++) {
+            legend_box = document.createElement("div");
+            legend_box.className = "legend-box";
+            legend_box.style.backgroundColor = colors[i];
+            legend.appendChild(legend_box);
+            if (i == 0) {
+                legend.innerHTML = legend.innerHTML + " " + Math.round(min) + " - " + Math.round(color_division[i]) + " " + unit + "<br>";
+            }
+            else {
+                legend.innerHTML = legend.innerHTML + " " + Math.round(color_division[i - 1] + 1) + " - " + Math.round(color_division[i]) + " " + unit + "<br>";
+            }
         }
     }
 
@@ -195,12 +224,19 @@ function draw_path(path, data, colors, quantity, unit) {
     var previous_color = -1;
     for (i = 0; i < path.length; i++) {
         var this_color;
-        for (j = 0; j < color_division.length; j++) {
-            if (data[i] <= color_division[j]) {
-                this_color = j;
-                break;
+
+        if (isNaN(data[i])) {
+            this_color = colors.length - 1;
+        }
+        else {
+            for (j = 0; j < color_division.length; j++) {
+                if (data[i] <= color_division[j]) {
+                    this_color = j;
+                    break;
+                }
             }
         }
+
         if (this_color == previous_color) {
             current_segment[current_segment.length] = path[i];
         }
@@ -376,6 +412,17 @@ function parse_log(log_file_info) {
     // Parse each line by spaces
     for (var i = 0; i < log_file_info.parsed_data.length; i++) {
         log_file_info.parsed_data[i] = log_file_info.parsed_data[i].split(" ");
+        for (var j = 0; j < log_file_info.parsed_data[i].length; j++) {
+            if (log_file_info.parsed_data[i][j].charCodeAt(0) == 13 || log_file_info.parsed_data[i][j].charCodeAt(0) == 10 || log_file_info.parsed_data[i][j].length == 0) {
+                log_file_info.parsed_data[i].splice(j, 1);
+            }
+        }
+    }
+    for (i = 0; i < log_file_info.parsed_data.length; i++) {
+        if (log_file_info.parsed_data[i].length < log_file_info.parsed_data[0].length) {
+            log_file_info.parsed_data.splice(i, 1);
+            i--;
+        }
     }
 }
 
@@ -426,7 +473,7 @@ function load_log_input() {
                         log_select.add(log_option);
                     };
 
-                    log_reader.readAsText(log_file, 'ANSI');
+                    log_reader.readAsText(log_file, 'UTF8');
                 }
             }
 
