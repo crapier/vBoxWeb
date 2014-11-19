@@ -388,6 +388,9 @@ function select_log() {
         }
         polylines = [];
 
+        // Hide Graphs If shown
+        graph_div.style.display = "none";
+
         // Remove start and end marker if present
         if (start_marker) {
             start_marker.setMap(null);
@@ -598,8 +601,10 @@ function show_graphs() {
 
         var graph_row = table.insertRow(0);
         for (i = 3; i < parsed_data[0].length; i++) {
-            var cell_graph = graph_row.insertCell(i-3);
-            cell_graph.innerHTML = '<div id="chart-' + (i - 2) + '"> </canvas>';
+            if (parsed_data[0][i] != "Events") {
+                var cell_graph = graph_row.insertCell(i - 3);
+                cell_graph.innerHTML = '<div id="chart-' + (i - 2) + '"> </canvas>';
+            }
         }
 
         var timestamps = "";
@@ -610,46 +615,51 @@ function show_graphs() {
 
         charts = [];
         for (i = 3; i < parsed_data[0].length; i++) {
-            var data = "";
-            for (var j = 1; j < parsed_data.length-1; j++) {
-                data += parsed_data[j][i] + "|";
-            }
-            data += parsed_data[parsed_data.length-1][i];
-
-            charts[charts.length] = new FusionCharts({
-                "type": "zoomline",
-                "renderAt": "chart-" + (i-2),
-                "width": "800",
-                "height": "" + (window.innerHeight - 150),
-                "dataFormat": "json",
-                "dataSource": {
-                    "chart": {
-                        "caption": parsed_data[0][i].split("-")[0],
-                        "yaxisname": parsed_data[0][i].split("-")[0] + " (in " + parsed_data[0][i].split("-")[1] + ")",
-                        "xaxisname": "Timestamp",
-                        "yaxisminValue": "0",
-                        "yaxismaxValue": "0",
-                        "forceAxisLimits" : "1",
-                        "pixelsPerPoint": "0",
-                        "pixelsPerLabel": "30",
-                        "lineThickness": "1",
-                        "compactdatamode" : "1",
-                        "dataseparator" : "|",
-                        "labelHeight": "50",
-                        "numVisibleLabels": "10",
-                        "theme": "fint"
-                    },
-                    "categories": [{
-                        "category": timestamps
-                    }],
-                    "dataset": [{
-                        "data": data
-                    }]
+            if (parsed_data[0][i] != "Events") {
+                var data = "";
+                for (var j = 1; j < parsed_data.length - 1; j++) {
+                    data += parsed_data[j][i] + "|";
                 }
-            });
-            charts[charts.length-1].render();
-        }
+                data += parsed_data[parsed_data.length - 1][i];
 
+                charts[charts.length] = new FusionCharts({
+                    "type": "zoomline",
+                    "renderAt": "chart-" + (i - 2),
+                    "width": "800",
+                    "height": "" + (window.innerHeight - 150),
+                    "dataFormat": "json",
+                    "dataSource": {
+                        "chart": {
+                            "caption": parsed_data[0][i].split("-")[0],
+                            "yaxisname": parsed_data[0][i].split("-")[0] + " (in " + parsed_data[0][i].split("-")[1] + ")",
+                            "xaxisname": "Timestamp",
+                            "yaxisminValue": "0",
+                            "yaxismaxValue": "0",
+                            "forceAxisLimits": "1",
+                            "pixelsPerPoint": "0",
+                            "pixelsPerLabel": "30",
+                            "lineThickness": "1",
+                            "compactdatamode": "1",
+                            "dataseparator": "|",
+                            "labelHeight": "50",
+                            "numVisibleLabels": "10",
+                            "theme": "fint"
+                        },
+                        "categories": [
+                            {
+                                "category": timestamps
+                            }
+                        ],
+                        "dataset": [
+                            {
+                                "data": data
+                            }
+                        ]
+                    }
+                });
+                charts[charts.length - 1].render();
+            }
+        }
     }
 }
 
