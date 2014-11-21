@@ -5,6 +5,7 @@ var polylines = [];
 // Start and end Marker
 var start_marker;
 var end_marker;
+var event_markers = [];
 
 // Regular expression for log files
 var log_extension = /.*\.(log)$/;
@@ -83,13 +84,16 @@ function polyline_click (event) {
     }
 
     if (index != -1) {
-        click_info.setPosition(new google.maps.LatLng(parsed_data[index][1], parsed_data[index][2]));
-
         var table = document.createElement("table");
         table.setAttribute("class", "infotable");
         table.insertRow(0).insertCell(0).innerHTML = parse_timestamp(parsed_data[index][0]);
         for (i = 3; i < parsed_data[0].length; i++) {
-            table.insertRow(i-2).insertCell(0).innerHTML = parsed_data[0][i].split('-')[0] + ": " + parsed_data[index][i] + " " + parsed_data[0][i].split('-')[1];
+            if (parsed_data[0][i] != "Events") {
+                table.insertRow(i - 2).insertCell(0).innerHTML = parsed_data[0][i].split('-')[0] + ": " + parsed_data[index][i] + " " + parsed_data[0][i].split('-')[1];
+            }
+            else {
+                table.insertRow(i - 2).insertCell(0).innerHTML = parsed_data[0][i] + ": " + get_event(parsed_data[index][i]);
+            }
         }
 
         var timestamp = parseInt(parsed_data[index][0]);
@@ -111,6 +115,7 @@ function polyline_click (event) {
             div.appendChild(images[img_index].img);
         }
 
+        click_info.setPosition(new google.maps.LatLng(parsed_data[index][1], parsed_data[index][2]));
         click_info.open(map);
         click_info.setContent(div);
     }
@@ -331,6 +336,173 @@ function draw_path(path, data, colors, quantity, unit) {
     map.fitBounds(bounds);
 }
 
+function get_event(event_id) {
+    if (isNaN(event_id) || event_id == 0) {
+        return "None";
+    }
+    else if (event_id == 1) {
+        return "Brake";
+    }
+}
+
+function event_click(event) {
+    var latlng = event.latLng;
+    var minDistance = 999999999999;
+    var i;
+
+    var marker = -1;
+
+    for(i = 0; i < event_markers.length; i++) {
+        var dist = Math.sqrt(Math.pow((latlng.lat() - event_markers[i].position.lat()), 2) + Math.pow((latlng.lng() - event_markers[i].position.lng()), 2));
+        if (dist < minDistance) {
+            marker = event_markers[i];
+            minDistance = dist;
+        }
+    }
+
+    var log_select = document.getElementById("log_select_dropdown");
+    var parsed_data = logs[log_select.selectedIndex].parsed_data;
+
+    var table = document.createElement("table");
+    table.setAttribute("class", "infotable");
+    table.insertRow(0).insertCell(0).innerHTML = parse_timestamp(parsed_data[marker.path_ID][0]);
+    for (i = 3; i < parsed_data[0].length; i++) {
+        if (parsed_data[0][i] != "Events") {
+            table.insertRow(i - 2).insertCell(0).innerHTML = parsed_data[0][i].split('-')[0] + ": " + parsed_data[marker.path_ID][i] + " " + parsed_data[0][i].split('-')[1];
+        }
+        else {
+            table.insertRow(i - 2).insertCell(0).innerHTML = parsed_data[0][i] + ": " + get_event(parsed_data[marker.path_ID][i]);
+        }
+    }
+
+    var timestamp = parseInt(parsed_data[marker.path_ID][0]);
+    var time_diff = 1000000;
+    var img_index = -1;
+    for (i = 0; i < images.length; i++) {
+        var diff = Math.abs(timestamp - parseInt(images[i].filename.substr(0, images[i].filename.length - 4)));
+        if (diff < time_diff) {
+            img_index = i;
+            time_diff = diff;
+        }
+    }
+
+    var div = document.createElement("div");
+    div.setAttribute("class", "infobox");
+    div.appendChild(table);
+
+    if (img_index != -1) {
+        div.appendChild(images[img_index].img);
+    }
+
+    click_info.setPosition(new google.maps.LatLng(parsed_data[marker.path_ID][1], parsed_data[marker.path_ID][2]));
+    click_info.open(map);
+    click_info.setContent(div);
+}
+
+function draw_events (path, data) {
+    // Loop control
+    var i, j;
+
+    // Remove all current polylines from the map
+    for (i = 0; i < polylines.length; i++) {
+        polylines[i].setMap(null);
+    }
+    polylines = [];
+
+    // Add legend to legend div and un-hide it
+    legend.innerHTML = "Events <br>";
+    legend.style.display = "block";
+
+    var start_img = document.createElement("img");
+    start_img.src = "img/startPosition.png";
+    start_img.width = 20;
+    start_img.height = 20;
+    legend.appendChild(start_img);
+    legend.innerHTML = legend.innerHTML + " Start ";
+
+    var end_img = document.createElement("img");
+    end_img.src = "img/endPosition.png";
+    end_img.width = 20;
+    end_img.height = 20;
+    legend.appendChild(end_img);
+    legend.innerHTML = legend.innerHTML + " End<br>";
+
+    // Remove start and end marker if present
+    if (start_marker) {
+        start_marker.setMap(null);
+        end_marker.setMap(null);
+    }
+
+    // Create and Draw the Start and End position Markers
+    start_marker = new google.maps.Marker({
+        position: path[0],
+        map: map,
+        icon: {
+            url: "img/startPosition.png",
+            anchor: new google.maps.Point(20, 20)
+        },
+        title: "Start",
+        cursor: "Start",
+        clickable: false,
+        zIndex: 40
+    });
+    end_marker = new google.maps.Marker({
+        position: path[path.length-1],
+        map: map,
+        icon: {
+            url: "img/endPosition.png",
+            anchor: new google.maps.Point(20, 20)
+        },
+        title: "End",
+        cursor: "End",
+        clickable: false,
+        zIndex: 50
+    });
+
+    polylines[polylines.length] = new google.maps.Polyline({
+        path: path,
+        geodesic: true,
+        strokeColor: "#AAAAAA",
+        strokeOpacity: 1.0,
+        strokeWeight: 5,
+        zIndex: 100
+    });
+
+    polylines[polylines.length - 1].setMap(map);
+    google.maps.event.addListener(polylines[polylines.length-1], 'click', polyline_click);
+
+    // Remove event markers
+    for (i = 0; i < event_markers.length; i++) {
+        event_markers[i].setMap(null);
+    }
+    event_markers = [];
+
+    for (i = 0; i < data.length; i++) {
+        if (data[i] > 0) {
+            if (data[i] == 1) {
+                event_markers[event_markers.length] = new google.maps.Marker({
+                    position: path[i],
+                    map: map,
+                    icon: {
+                        url: "img/event.png",
+                        anchor: new google.maps.Point(20, 20)
+                    },
+                    title: get_event(data[i]),
+                    cursor: get_event(data[i]),
+                    clickable: true,
+                    zIndex: 30
+                });
+                event_markers[event_markers.length - 1].path_ID = i + 1;
+                google.maps.event.addListener(event_markers[event_markers.length - 1], 'click', event_click);
+            }
+            else {
+
+            }
+        }
+    }
+
+}
+
 // Draw data from a log file
 //  log_file_info - log file to use
 //  data_selection - which data/quantity to use
@@ -349,9 +521,13 @@ function draw_data(log_file_info, data_selection) {
         path[i-1] = new google.maps.LatLng(parseFloat(log_file_info.parsed_data[i][1]), parseFloat(log_file_info.parsed_data[i][2]));
         data[i-1] = parseFloat(log_file_info.parsed_data[i][data_selection]);
     }
-
-    var quantity_unit = log_file_info.parsed_data[0][data_selection].split("-");
-    draw_path(path, data, color, quantity_unit[0], quantity_unit[1]);
+    if (log_file_info.parsed_data[0][data_selection] != "Events") {
+        var quantity_unit = log_file_info.parsed_data[0][data_selection].split("-");
+        draw_path(path, data, color, quantity_unit[0], quantity_unit[1]);
+    }
+    else {
+        draw_events(path, data);
+    }
 }
 
 // Handle button presses for selecting which data/quantity to use
@@ -396,6 +572,12 @@ function select_log() {
             start_marker.setMap(null);
             end_marker.setMap(null);
         }
+
+        // Remove event markers
+        for (i = 0; i < event_markers.length; i++) {
+            event_markers[i].setMap(null);
+        }
+        event_markers = [];
 
         // Close infowindow
         click_info.setMap(null);
