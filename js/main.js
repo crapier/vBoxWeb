@@ -343,6 +343,9 @@ function get_event(event_id) {
     else if (event_id == 1) {
         return "Brake";
     }
+    else {
+        return "Undefined";
+    }
 }
 
 function event_click(event) {
@@ -478,32 +481,25 @@ function draw_events (path, data) {
     event_markers = [];
 
     show_event_markers(path, data);
-
 }
 
 function show_event_markers(path, data) {
-
     for (var i = 0; i < data.length; i++) {
         if (data[i] > 0) {
-            if (data[i] == 1) {
-                event_markers[event_markers.length] = new google.maps.Marker({
-                    position: path[i],
-                    map: map,
-                    icon: {
-                        url: "img/event.png",
-                        anchor: new google.maps.Point(20, 20)
-                    },
-                    title: get_event(data[i]),
-                    cursor: get_event(data[i]),
-                    clickable: true,
-                    zIndex: 30
-                });
-                event_markers[event_markers.length - 1].path_ID = i + 1;
-                google.maps.event.addListener(event_markers[event_markers.length - 1], 'click', event_click);
-            }
-            else {
-
-            }
+            event_markers[event_markers.length] = new google.maps.Marker({
+                position: path[i],
+                map: map,
+                icon: {
+                    url: "img/event.png",
+                    anchor: new google.maps.Point(20, 20)
+                },
+                title: get_event(data[i]),
+                cursor: get_event(data[i]),
+                clickable: true,
+                zIndex: 30
+            });
+            event_markers[event_markers.length - 1].path_ID = i + 1;
+            google.maps.event.addListener(event_markers[event_markers.length - 1], 'click', event_click);
         }
     }
 }
@@ -670,12 +666,10 @@ function load_log_input() {
         if (valid_logs) {
             // loop control
             var i;
-            // Clear current logs
-            logs = [];
 
             // Clear the logs in the log select dropdown
             var log_select = document.getElementById("log_select_dropdown");
-            while (log_select.length > 0) {
+            if (log_select[0].text == "No Logs Loaded") {
                 log_select.remove(0);
             }
 
@@ -688,13 +682,25 @@ function load_log_input() {
                     log_reader.filename = log_file.name;
 
                     log_reader.onload = function (progress_event) {
-                        logs[logs.length] = new Log_File_Info();
-                        logs[logs.length - 1].log_data = progress_event.target.result;
-                        logs[logs.length - 1].filename = progress_event.target.filename;
+                        for (var j = 0; j < log_select.length; j++) {
+                            if (log_select[0].text == progress_event.target.filename) {
+                                break;
+                            }
+                        }
+                        if (j >= log_select.length) {
+                            logs[logs.length] = new Log_File_Info();
+                            logs[logs.length - 1].log_data = progress_event.target.result;
+                            logs[logs.length - 1].filename = progress_event.target.filename;
 
-                        var log_option = document.createElement("option");
-                        log_option.text = logs[logs.length - 1].filename;
-                        log_select.add(log_option);
+                            var log_option = document.createElement("option");
+                            log_option.text = logs[logs.length - 1].filename;
+                            log_select.add(log_option);
+                        }
+                        else {
+                            logs[j] = new Log_File_Info();
+                            logs[j].log_data = progress_event.target.result;
+                            logs[j].filename = progress_event.target.filename;
+                        }
                     };
 
                     log_reader.readAsText(log_file, 'UTF8');
