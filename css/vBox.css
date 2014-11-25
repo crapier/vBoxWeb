@@ -49,9 +49,13 @@ button {
     width: 100%;
 }
 
-/* Show Menu button */
+/* Menu Dropdown button */
 .navbar-toggle {
     width: inherit;
+}
+
+#event_toggler {
+    display: none;
 }
 
 #legend {

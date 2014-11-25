@@ -477,7 +477,13 @@ function draw_events (path, data) {
     }
     event_markers = [];
 
-    for (i = 0; i < data.length; i++) {
+    show_event_markers(path, data);
+
+}
+
+function show_event_markers(path, data) {
+
+    for (var i = 0; i < data.length; i++) {
         if (data[i] > 0) {
             if (data[i] == 1) {
                 event_markers[event_markers.length] = new google.maps.Marker({
@@ -500,7 +506,35 @@ function draw_events (path, data) {
             }
         }
     }
+}
 
+function toggle_events() {
+    if (event_markers.length > 0) {
+        // Remove event markers
+        for (i = 0; i < event_markers.length; i++) {
+            event_markers[i].setMap(null);
+        }
+        event_markers = [];
+    }
+    else {
+        var log_select = document.getElementById("log_select_dropdown");
+        var log_file_info = logs[log_select.selectedIndex];
+        var path = [];
+        var data = [];
+
+        var event_index = -1;
+        for(var i = 3; i < log_file_info.parsed_data[0].length; i++) {
+            if (log_file_info.parsed_data[0][i] == "Events") {
+                event_index = i;
+                break;
+            }
+        }
+        for(i = 1; i < log_file_info.parsed_data.length; i++) {
+            path[i-1] = new google.maps.LatLng(parseFloat(log_file_info.parsed_data[i][1]), parseFloat(log_file_info.parsed_data[i][2]));
+            data[i-1] = parseFloat(log_file_info.parsed_data[i][event_index]);
+        }
+        show_event_markers(path, data);
+    }
 }
 
 // Draw data from a log file
@@ -549,7 +583,12 @@ function select_log() {
         while (data_select_dropdown.length > 0) {
             data_select_dropdown.remove(0);
         }
+
+        document.getElementById("event_toggler").style.display = "none";
         for (var i = 3; i < logs[log_select.selectedIndex].parsed_data[0].length; i++) {
+            if (logs[log_select.selectedIndex].parsed_data[0][i] == "Events") {
+                document.getElementById("event_toggler").style.display = "block";
+            }
             var option = document.createElement("option");
             option.text = logs[log_select.selectedIndex].parsed_data[0][i].split("-")[0];
             data_select_dropdown.add(option);
@@ -773,7 +812,6 @@ function show_graphs() {
         graph_div.style.height = window.innerHeight - 50 + "px";
         graph_div.style.top = "-" + (window.innerHeight - 50) + "px";
 
-        parse_log(logs[log_select.selectedIndex]);
         var parsed_data = logs[log_select.selectedIndex].parsed_data;
 
         graph_div.innerHTML = '<button id="graph-close-button" onclick="close_graphs()">Close</button>';
