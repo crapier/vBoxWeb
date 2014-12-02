@@ -88,11 +88,14 @@ function polyline_click (event) {
         table.setAttribute("class", "infotable");
         table.insertRow(0).insertCell(0).innerHTML = parse_timestamp(parsed_data[index][0]);
         for (i = 3; i < parsed_data[0].length; i++) {
+            var row = table.insertRow(i - 2);
             if (parsed_data[0][i] != "Events") {
-                table.insertRow(i - 2).insertCell(0).innerHTML = parsed_data[0][i].split('-')[0] + ": " + parsed_data[index][i] + " " + parsed_data[0][i].split('-')[1];
+                row.insertCell(0).innerHTML = parsed_data[0][i].split('-')[0] + ": ";
+                row.insertCell(1).innerHTML = parsed_data[index][i] + " " + parsed_data[0][i].split('-')[1];
             }
             else {
-                table.insertRow(i - 2).insertCell(0).innerHTML = parsed_data[0][i] + ": " + get_event(parsed_data[index][i]);
+                row.insertCell(0).innerHTML = parsed_data[0][i] + ": ";
+                row.insertCell(1).innerHTML = get_event(parsed_data[index][i]);
             }
         }
 
@@ -370,11 +373,14 @@ function event_click(event) {
     table.setAttribute("class", "infotable");
     table.insertRow(0).insertCell(0).innerHTML = parse_timestamp(parsed_data[marker.path_ID][0]);
     for (i = 3; i < parsed_data[0].length; i++) {
+        var row = table.insertRow(i - 2);
         if (parsed_data[0][i] != "Events") {
-            table.insertRow(i - 2).insertCell(0).innerHTML = parsed_data[0][i].split('-')[0] + ": " + parsed_data[marker.path_ID][i] + " " + parsed_data[0][i].split('-')[1];
+            row.insertCell(0).innerHTML = parsed_data[0][i].split('-')[0] + ": ";
+            row.insertCell(1).innerHTML = parsed_data[marker.path_ID][i] + " " + parsed_data[0][i].split('-')[1];
         }
         else {
-            table.insertRow(i - 2).insertCell(0).innerHTML = parsed_data[0][i] + ": " + get_event(parsed_data[marker.path_ID][i]);
+            row.insertCell(0).innerHTML = parsed_data[0][i] + ": ";
+            row.insertCell(1).innerHTML = get_event(parsed_data[marker.path_ID][i]);
         }
     }
 
