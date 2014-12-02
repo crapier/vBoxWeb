@@ -1,0 +1,102 @@
+html {
+    height: 100%;
+}
+
+.side-nav {
+    overflow-y: visible;
+}
+
+.navbar-nav>li {
+    float: none;
+}
+
+.dropdown-menu {
+    width: 100%;
+    border-radius: 0;
+    position: relative;
+    float: none;
+    background-color: rgba(34, 34, 34, 0.100);
+}
+
+#map-canvas {
+    height: 100%;
+}
+
+select {
+    width: 100%;
+}
+
+/* File Upload Button (Chrome & IE)*/
+input[type="file"] {
+    width: 100%;
+}
+input[type="file"]::-webkit-file-upload-button{
+    background: rgb(150, 150, 150);
+    border: none;
+    padding: 1px 10px 1px 10px;
+    color: #e3e3e3;
+    min-height: 22px;
+    width: 100%;
+}
+
+/* All Buttons */
+button {
+    background: rgb(150, 150, 150);
+    border: none;
+    padding: 1px 10px 1px 10px;
+    color: #e3e3e3;
+    min-height: 22px;
+    width: 100%;
+}
+
+/* Menu Dropdown button */
+.navbar-toggle {
+    width: inherit;
+}
+
+#event_toggler {
+    display: none;
+}
+
+#legend {
+    color: #000000;
+    background-color: #ffff88;
+    width: 100%;
+    padding: 5px 5px 5px 5px;
+    display: none;
+}
+
+.legend-box {
+    width: 10px;
+    height: 10px;
+    display: inline-block;
+}
+
+#graph-popup {
+    color:black;
+    background-color:white;
+    position:relative;
+    width: 100%;
+    box-sizing: border-box;
+    border:5px solid;
+    border-color: #ffffff;
+    padding:10px;
+    display: none;
+
+    overflow-y: hidden;
+    overflow-x: auto;
+}
+
+#graph-close-button {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+}
+
+.infobox {
+    display:inline-block;
+}
+
+.infotable {
+    display:inline-block;
+}
