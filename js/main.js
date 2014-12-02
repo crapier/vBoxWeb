@@ -404,7 +404,7 @@ function event_click(event) {
 
 function draw_events (path, data) {
     // Loop control
-    var i, j;
+    var i;
 
     // Remove all current polylines from the map
     for (i = 0; i < polylines.length; i++) {
@@ -732,9 +732,6 @@ function load_pic_input() {
 
         // There are pics to load
         if (valid_pic) {
-            // Clear images
-            //images = [];
-
             // Test each selected file to see if it is an image and create
             // a pic image info structure for it after reading it in
             for (var i = 0; i < pic_input.files.length; i++) {
@@ -909,7 +906,7 @@ function close_graphs() {
 }
 
 // Handle resizing of the window for elements that need to be resize (graph popup div)
-function handle_resize(event) {
+function handle_resize() {
     if (graph_div.style.display == "block") {
         graph_div.style.height = window.innerHeight - 50 + "px";
         graph_div.style.top = "-" + (window.innerHeight - 50) + "px";
