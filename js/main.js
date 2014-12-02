@@ -683,7 +683,7 @@ function load_log_input() {
 
                     log_reader.onload = function (progress_event) {
                         for (var j = 0; j < log_select.length; j++) {
-                            if (log_select[0].text == progress_event.target.filename) {
+                            if (log_select[j].text == progress_event.target.filename) {
                                 break;
                             }
                         }
@@ -733,7 +733,7 @@ function load_pic_input() {
         // There are pics to load
         if (valid_pic) {
             // Clear images
-            images = [];
+            //images = [];
 
             // Test each selected file to see if it is an image and create
             // a pic image info structure for it after reading it in
@@ -744,9 +744,23 @@ function load_pic_input() {
                     pic_reader.filename = pic_file.name;
 
                     pic_reader.onload = function (progress_event) {
-                        images[images.length] = new Pic_File_Info();
-                        images[images.length-1].img.setAttribute("src", progress_event.target.result);
-                        images[images.length-1].filename = progress_event.target.filename;
+                        for (var j = 0; j < images.length; j++) {
+                            console.log(images[j].filename + " vs " + progress_event.target.filename);
+                            if (images[j].filename == progress_event.target.filename) {
+                                break;
+                            }
+                        }
+                        console.log("j = " + j);
+                        if (j >= images.length) {
+                            images[images.length] = new Pic_File_Info();
+                            images[images.length-1].img.setAttribute("src", progress_event.target.result);
+                            images[images.length-1].filename = progress_event.target.filename;
+                        }
+                        else {
+                            images[j] = new Pic_File_Info();
+                            images[j].img.setAttribute("src", progress_event.target.result);
+                            images[j].filename = progress_event.target.filename;
+                        }
                     };
 
                     pic_reader.readAsDataURL(pic_file);
