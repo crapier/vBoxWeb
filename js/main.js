@@ -16,7 +16,7 @@ var logs = [];
 var charts = [];
 
 // Regular expression for
-var picture_extension = /.*\.(jpg)$/;
+var picture_extension = /.*\.(jpg)|(bmp)$/;
 // Array of Pic_File_Info
 var images = [];
 
@@ -748,12 +748,10 @@ function load_pic_input() {
 
                     pic_reader.onload = function (progress_event) {
                         for (var j = 0; j < images.length; j++) {
-                            console.log(images[j].filename + " vs " + progress_event.target.filename);
                             if (images[j].filename == progress_event.target.filename) {
                                 break;
                             }
                         }
-                        console.log("j = " + j);
                         if (j >= images.length) {
                             images[images.length] = new Pic_File_Info();
                             images[images.length-1].img.setAttribute("src", progress_event.target.result);
