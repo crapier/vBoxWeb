@@ -86,7 +86,10 @@ function polyline_click (event) {
     if (index != -1) {
         var table = document.createElement("table");
         table.setAttribute("class", "infotable");
-        table.insertRow(0).insertCell(0).innerHTML = parse_timestamp(parsed_data[index][0]);
+        var first_row = table.insertRow(0);
+        var time = first_row.insertCell(0);
+        time.colSpan = 2;
+        time.innerHTML = parse_timestamp(parsed_data[index][0]);
         for (i = 3; i < parsed_data[0].length; i++) {
             var row = table.insertRow(i - 2);
             if (parsed_data[0][i] != "Events") {
@@ -109,18 +112,15 @@ function polyline_click (event) {
                 time_diff = diff;
             }
         }
-
-        var div = document.createElement("div");
-        div.setAttribute("class", "infobox");
-        div.appendChild(table);
-
         if (img_index != -1) {
-            div.appendChild(images[img_index].img);
+            var img_cell = first_row.insertCell(1);
+            img_cell.rowSpan = parsed_data[0].length - 2;
+            img_cell.appendChild(images[img_index].img);
         }
 
         click_info.setPosition(new google.maps.LatLng(parsed_data[index][1], parsed_data[index][2]));
         click_info.open(map);
-        click_info.setContent(div);
+        click_info.setContent(table);
     }
 }
 
@@ -371,7 +371,10 @@ function event_click(event) {
 
     var table = document.createElement("table");
     table.setAttribute("class", "infotable");
-    table.insertRow(0).insertCell(0).innerHTML = parse_timestamp(parsed_data[marker.path_ID][0]);
+    var first_row = table.insertRow(0);
+    var time = first_row.insertCell(0);
+    time.colSpan = 2;
+    time.innerHTML = parse_timestamp(parsed_data[marker.path_ID][0]);
     for (i = 3; i < parsed_data[0].length; i++) {
         var row = table.insertRow(i - 2);
         if (parsed_data[0][i] != "Events") {
@@ -395,17 +398,15 @@ function event_click(event) {
         }
     }
 
-    var div = document.createElement("div");
-    div.setAttribute("class", "infobox");
-    div.appendChild(table);
-
     if (img_index != -1) {
-        div.appendChild(images[img_index].img);
+        var img_cell = first_row.insertCell(1);
+        img_cell.rowSpan = parsed_data[0].length - 2;
+        img_cell.appendChild(images[img_index].img);
     }
 
     click_info.setPosition(new google.maps.LatLng(parsed_data[marker.path_ID][1], parsed_data[marker.path_ID][2]));
     click_info.open(map);
-    click_info.setContent(div);
+    click_info.setContent(table);
 }
 
 function draw_events (path, data) {
@@ -755,6 +756,8 @@ function load_pic_input() {
                         if (j >= images.length) {
                             images[images.length] = new Pic_File_Info();
                             images[images.length-1].img.setAttribute("src", progress_event.target.result);
+                            images[images.length-1].img.style.width = "360px";
+                            images[images.length-1].img.style.height = "180px";
                             images[images.length-1].filename = progress_event.target.filename;
                         }
                         else {
