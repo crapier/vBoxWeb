@@ -96,3 +96,7 @@ button {
 .infotable {
     display:inline-block;
 }
+
+.infotable>tbody>tr>td {
+    vertical-align: top;
+}
