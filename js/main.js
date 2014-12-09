@@ -119,8 +119,8 @@ function polyline_click (event) {
         }
 
         click_info.setPosition(new google.maps.LatLng(parsed_data[index][1], parsed_data[index][2]));
-        click_info.open(map);
         click_info.setContent(table);
+        click_info.open(map);
     }
 }
 
@@ -405,8 +405,8 @@ function event_click(event) {
     }
 
     click_info.setPosition(new google.maps.LatLng(parsed_data[marker.path_ID][1], parsed_data[marker.path_ID][2]));
-    click_info.open(map);
     click_info.setContent(table);
+    click_info.open(map);
 }
 
 function draw_events (path, data) {
