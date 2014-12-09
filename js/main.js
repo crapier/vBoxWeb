@@ -103,11 +103,12 @@ function polyline_click (event) {
         }
 
         var timestamp = parseInt(parsed_data[index][0]);
-        var time_diff = 1000000;
+        var time_diff = 5000;
         var img_index = -1;
         for (i = 0; i < images.length; i++) {
             var diff = Math.abs(timestamp - parseInt(images[i].filename.substr(0, images[i].filename.length - 4)));
             if (diff < time_diff) {
+                //console.log(timestamp + " - " + parseInt(images[i].filename.substr(0, images[i].filename.length - 4)) + " = " + diff);
                 img_index = i;
                 time_diff = diff;
             }
@@ -121,6 +122,11 @@ function polyline_click (event) {
         click_info.setPosition(new google.maps.LatLng(parsed_data[index][1], parsed_data[index][2]));
         click_info.setContent(table);
         click_info.open(map);
+
+        // Fix Info box sometimes not being the right size by opening it again after short delay
+        setTimeout(function() {
+            click_info.open(map);
+        }, 100);
     }
 }
 
@@ -388,7 +394,7 @@ function event_click(event) {
     }
 
     var timestamp = parseInt(parsed_data[marker.path_ID][0]);
-    var time_diff = 1000000;
+    var time_diff = 5000;
     var img_index = -1;
     for (i = 0; i < images.length; i++) {
         var diff = Math.abs(timestamp - parseInt(images[i].filename.substr(0, images[i].filename.length - 4)));
@@ -407,6 +413,11 @@ function event_click(event) {
     click_info.setPosition(new google.maps.LatLng(parsed_data[marker.path_ID][1], parsed_data[marker.path_ID][2]));
     click_info.setContent(table);
     click_info.open(map);
+
+    // Fix Info box sometimes not being the right size by opening it again after short delay
+    setTimeout(function() {
+        click_info.open(map);
+    }, 100);
 }
 
 function draw_events (path, data) {
