@@ -350,7 +350,10 @@ function get_event(event_id) {
         return "None";
     }
     else if (event_id == 1) {
-        return "Brake";
+        return "Braking";
+    }
+    else if (event_id == 2) {
+        return "Acceleration";
     }
     else {
         return "Undefined";
