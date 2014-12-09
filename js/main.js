@@ -756,8 +756,8 @@ function load_pic_input() {
                         if (j >= images.length) {
                             images[images.length] = new Pic_File_Info();
                             images[images.length-1].img.setAttribute("src", progress_event.target.result);
-                            images[images.length-1].img.style.width = "360px";
-                            images[images.length-1].img.style.height = "180px";
+                            images[images.length-1].img.style.width = "384px";
+                            images[images.length-1].img.style.height = "216px";
                             images[images.length-1].filename = progress_event.target.filename;
                         }
                         else {
