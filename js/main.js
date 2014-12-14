@@ -38,9 +38,10 @@ function initialize() {
     var mapOptions = {
         center: { lat: 30.618989, lng: -96.338653},
         zoom: 16,
-        streetViewControl: false,
+        streetViewControl: true,
         panControl: false,
-        zoomControl: false
+        zoomControl: false,
+        minZoom: 3
     };
     // Create the map
     map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
