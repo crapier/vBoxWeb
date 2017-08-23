@@ -1,6 +1,6 @@
 vBoxWeb
 =======
-Web Application front end for Texas A&M CSCE 683 Senior Design Project. 
+Web Application front end for Texas A&M CSCE 483 Senior Design Project. 
 
 This project was desgined as an ODB/GPS/Camera monitor for a car. It uses a microcontroller to read and record data from a bluetooth ODB device, a USB camera, and a USB GPS device.  
 
